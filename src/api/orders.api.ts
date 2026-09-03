@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/axios';
+import api, { getApiErrorMessage } from '@/lib/axios';
 import type { Order, OrderStatus, PaginatedResponse } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -67,8 +67,8 @@ export const useCreateOrder = () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
       toast.success('Order placed successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to place order');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Failed to place order'));
     },
   });
 };
@@ -99,8 +99,8 @@ export const useUpdateOrderStatus = () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.myOrders(data.userId) });
       toast.success('Order status updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update order status');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Failed to update order status'));
     },
   });
 };
@@ -119,8 +119,8 @@ export const useCancelOrder = () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.myOrders(data.userId) });
       toast.success('Order cancelled successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to cancel order');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Failed to cancel order'));
     },
   });
 };
@@ -138,8 +138,8 @@ export const useDeleteOrder = () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
       toast.success('Order deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete order');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Failed to delete order'));
     },
   });
 };

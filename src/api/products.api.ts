@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
-import api from '@/lib/axios';
+import api, { getApiErrorMessage } from '@/lib/axios';
 import type { Product, ProductFilters, PaginatedResponse, SortOption } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -21,10 +21,12 @@ export const useProducts = (
   filters?: ProductFilters,
   sort?: SortOption,
   page = 1,
-  pageSize = 12
+  pageSize = 12,
+  enabled = true
 ) => {
   return useQuery({
     queryKey: productKeys.list(filters, sort, page),
+    enabled,
     queryFn: async () => {
       const params = new URLSearchParams();
       
@@ -122,8 +124,8 @@ export const useCreateProduct = () => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       toast.success('Product created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create product');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Failed to create product'));
     },
   });
 };
@@ -142,8 +144,8 @@ export const useUpdateProduct = () => {
       queryClient.invalidateQueries({ queryKey: productKeys.detail(data.id) });
       toast.success('Product updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update product');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Failed to update product'));
     },
   });
 };
@@ -161,8 +163,8 @@ export const useDeleteProduct = () => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       toast.success('Product deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete product');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Failed to delete product'));
     },
   });
 };

@@ -19,9 +19,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    
-    /* Path aliases */
-    "baseUrl": ".",
+
+    /* Path aliases (resolved relative to this file; baseUrl removed — deprecated in TS 5.9+) */
     "paths": {
       "@/*": ["./src/*"],
       "@/components/*": ["./src/components/*"],

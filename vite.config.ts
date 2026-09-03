@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -5,6 +6,15 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  test: {
+    environment: 'node',
+    environmentMatchGlobs: [['src/features/**/*.test.tsx', 'jsdom'], ['src/components/**/*.test.tsx', 'jsdom']],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    setupFiles: ['./src/test/setup.ts', './src/test/setup-jsdom.ts'],
+    coverage: {
+      reporter: ['text', 'html'],
+    },
+  },
   plugins: [
     react(),
     VitePWA({

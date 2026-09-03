@@ -1,381 +1,169 @@
-# 🔥 Classic Watch Pro - Upgraded Version 2.0
+# ⌚ Classic Watch Pro
 
-একটি আধুনিক, high-performance luxury watch e-commerce platform যা সম্পূর্ণভাবে modernize এবং upgrade করা হয়েছে।
+> A production-grade, security-first luxury watch e-commerce platform built with **React 18, TypeScript, Vite, MUI 6, Zustand, and TanStack Query** — with a full demo-data mode that needs no backend, and real Firebase authentication ready to switch on.
 
-## 🚀 What's New in v2.0
+![version](https://img.shields.io/badge/version-3.0.0-212121) ![license](https://img.shields.io/badge/license-MIT-blue) ![tests](https://img.shields.io/badge/tests-116%20passing-success) ![PWA](https://img.shields.io/badge/PWA-ready-5A31F4)
 
-### 1. **Modern Tech Stack**
+---
 
-- ✅ React 17 → **React 18** (latest features, concurrent rendering)
-- ✅ React Router v5 → **React Router v6** (simplified API, better type safety)
-- ✅ Create React App → **Vite** (10x faster builds, HMR)
-- ✅ JavaScript → **TypeScript** (type safety, better DX)
-- ✅ Mixed Material-UI → **MUI v6** (consistent, latest)
-- ✅ **Zustand** for global state management (simpler than Redux)
-- ✅ **React Query** for server state (caching, optimistic updates)
+## ✨ What's inside
 
-### 2. **Architecture Improvements**
+### Storefront
+- **Catalog & discovery** — responsive product grid, category/brand/price/rating filters, sorting, search, featured & latest rails, and rich product detail pages with real photography.
+- **Cart & checkout** — persisted cart, shipping/contact forms with schema validation, multiple payment methods, order confirmation with a full order history.
+- **Account area** — customer dashboard, order tracking & detail with per-order activity timelines, wishlist, and profile management.
+
+### Accounts & security (the v3.0 focus)
+- **Full auth cycle** — register, login, Google sign-in, **forgot-password**, **email verification**, and a route-level "verify your email" gate.
+- **Two-factor authentication (TOTP)** — enroll with a live secret + `otpauth://` URI, verify-and-enable, disable. Real Firebase MFA path included; a deterministic demo path works offline.
+- **Passkeys (WebAuthn)** — *real* WebAuthn ceremonies via `@simplewebauthn` (registration + authentication), cryptographically verified client-side in demo mode, with **counter-based replay protection**. Browsers without WebAuthn fall back to a legacy stand-in, clearly labelled in the UI.
+- **Authorization** — `ProtectedRoute` / `AdminRoute` guards enforce sign-in, role, and email-verification; the admin surface is invisible to non-admins.
+- **Audit history** — immutable, timestamped activity trails on orders (placement, status changes, cancellations) and users (role changes), surfaced in Admin Orders, Admin Users, and the customer order page.
+
+### Admin & analytics
+- **Dashboard** — revenue/order/customer KPIs, dependency-free **SVG charts** (monthly revenue bars + order-status donut), inventory health, most-reviewed products.
+- **Sales reports** — export the analytics to **CSV** or a **print-to-PDF** report (HTML-escaped — report content can never inject markup).
+- **Management** — products CRUD, orders (status workflow + tracking notes), users (roles, 2FA badges, activity dialogs).
+
+### Demo-data layer (no backend required)
+- The app runs in **demo mode** out of the box: an in-memory mock database with realistic seed data (16 watches with live photo URLs, 6 users, 6 orders).
+- Every mutation **persists across reloads** to `localStorage` inside a **schema-versioned envelope** with a migration registry — old snapshots upgrade in place, never silently discard.
+- Admins get **Backup / Restore / Reset** controls: export the DB as versioned JSON, validate & import it back, or reseed.
+- Same code paths and API shape as the real backend — swap in Firebase credentials and the UI talks to Firestore instead.
+
+### Developer experience & quality
+- 19 test files / **116 tests** (Vitest + Testing Library + jsdom) across stores, guards, charts, WebAuthn ceremonies, exports, persistence & migrations.
+- **CI** (`.github/workflows/ci.yml`): lint → type-check → unit tests → production build → production-dependency audit → Lighthouse budget.
+- ESLint (incl. `eslint-plugin-security`), Prettier, strict TypeScript, route-level code splitting, PWA (installable, 50+ precached assets).
+
+---
+
+## 🛠 Tech stack
+
+| Area | Choice |
+| --- | --- |
+| Language / runtime | TypeScript 5.6 · Node ≥ 18 |
+| Build / dev server | Vite 5 (SWC React plugin) · PWA plugin |
+| UI | React 18 · MUI 6 · Framer Motion |
+| Routing | React Router 7 |
+| Client state | Zustand 5 (+ persist middleware) |
+| Server state | TanStack Query 5 |
+| Forms / validation | React Hook Form (pinned 7.53.x) + Zod |
+| Auth | Firebase Auth · `@simplewebauthn/browser` + `@simplewebauthn/server` |
+| HTTP | Axios with interceptors + an in-app mock adapter |
+| Tests | Vitest · React Testing Library · jsdom |
+| Quality | ESLint · Prettier · `tsc --noEmit` |
+
+---
+
+## 🚀 Getting started
+
+**Prerequisites:** Node.js ≥ 18 and npm ≥ 9.
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Start the dev server (demo mode — no Firebase needed)
+npm run dev
+# → http://localhost:5173
+
+# 3. (Optional) enable real auth + Firestore
+cp .env.example .env.local
+# fill in VITE_FIREBASE_* values, then restart
+```
+
+### Demo accounts
+
+In demo mode, sign in with **`demo@classicwatch.local`** and *any* password of 4+ characters (admin). Additional seeded users appear in **Admin → Manage users**. The demo admin is the account used by every protected/admin demo flow — try the 2FA and passkey flows from **Profile → Security**.
+
+> Without Firebase credentials the app auto-signs the demo account in on load, and mutations persist to `localStorage` under a versioned mock-DB key. The **Reset demo data** control on the admin dashboard reseeds everything.
+
+### Available scripts
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Type-check + production build to `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm run type-check` | `tsc --noEmit` |
+| `npm run lint` / `lint:fix` | ESLint (zero-warning policy) |
+| `npm run format` | Prettier across `src/` |
+| `npm test` | Run the full Vitest suite once |
+| `npm run test:watch` / `test:ui` | Watch / interactive UI mode |
+| `npm run test:coverage` | Coverage report |
+| `npm run generate:icons` | Regenerate PWA icon set |
+
+---
+
+## 🔐 Security posture
+
+- **No secrets in the repo** — Firebase keys live in `.env.local` (git-ignored); the app detects missing config and falls back to demo mode.
+- **Input & output hardening** — Zod-validated forms, XSS-safe rendering, HTML-escaped export/print views, and security-focused ESLint rules.
+- **Auth hardening** — anti-enumeration error copy, email-verification gate on protected routes, role-based route guards, TOTP second factor, WebAuthn passkeys with counter replay protection, and a public audit trail for privileged actions.
+- **Supply chain** — `npm audit --omit=dev --audit-level=high` runs in CI; a production-only audit keeps the check fast and meaningful.
+
+---
+
+## 🧪 Testing & quality gates
+
+Run the full gate locally (this is exactly what CI runs):
+
+```bash
+npm run lint && npm run type-check && npm test && npm run build
+```
+
+Coverage highlights: auth-store state machines (MFA, verification, passkeys incl. fallback), route guards & header nav, storage round-trips + schema migrations, adapter integration (mutations → reload → persistence), WebAuthn verification helpers, CSV/print export escaping, and chart rendering.
+
+---
+
+## 📁 Project structure
 
 ```
 src/
-├── api/              # API hooks & queries (React Query)
-├── assets/           # Images, icons, fonts
-├── components/       # Reusable UI components
-│   ├── common/      # Shared components
-│   ├── layout/      # Layout components
-│   └── ui/          # Base UI components
-├── config/          # App configuration
-├── features/        # Feature-based modules
-│   ├── auth/       # Authentication
-│   ├── products/   # Product catalog
-│   ├── cart/       # Shopping cart
-│   ├── orders/     # Order management
-│   ├── admin/      # Admin panel
-│   └── dashboard/  # User dashboard
-├── hooks/          # Custom React hooks
-├── lib/            # Third-party integrations
-├── store/          # Zustand stores
-├── styles/         # Theme & global styles
-├── types/          # TypeScript types
-└── utils/          # Helper functions
+├── api/            # Typed API hooks (React Query) for products/orders/users/wishlist
+├── components/     # Layout, common, shared UI (guards, error boundary, skeletons…)
+├── config/         # Env-driven app config + demo user
+├── features/       # Feature modules: auth, products, cart, orders, admin, dashboard, home
+│   ├── admin/      # Dashboard, charts, exports, CRUD, backup/restore controls
+│   ├── auth/       # Pages, MFA dialog, layouts
+│   └── …
+├── lib/            # Firebase bootstrap, axios client, WebAuthn ceremony helpers
+├── mocks/          # Mock DB: seeds, storage (schema-versioned), adapter, auth helpers
+├── store/          # Zustand stores: auth, cart, wishlist, theme
+├── test/           # Test setup + factories
+├── types/          # Shared domain types
+└── utils/          # Helpers, CSV/print export
 ```
 
-### 3. **Performance Optimizations**
+See [`FILE_STRUCTURE.md`](./FILE_STRUCTURE.md) for the full tree and [`PROJECT_OVERVIEW.md`](./PROJECT_OVERVIEW.md) for a deep dive.
 
-- ⚡ **Code Splitting**: Lazy loading for all routes
-- ⚡ **Bundle Size**: Reduced by 40% through tree-shaking
-- ⚡ **Image Optimization**: WebP format, lazy loading
-- ⚡ **Caching**: Smart caching with React Query & Service Worker
-- ⚡ **Chunk Splitting**: Vendor chunks separated
-- ⚡ **Build Time**: 70% faster with Vite
+---
 
-### 4. **New Features**
+## 📚 Documentation
 
-#### User Features
+| Document | Contents |
+| --- | --- |
+| [`README.md`](./README.md) | You are here |
+| [`PROJECT_OVERVIEW.md`](./PROJECT_OVERVIEW.md) | Package contents & architecture |
+| [`QUICK_START.md`](./QUICK_START.md) | Fast setup walkthrough |
+| [`DEPLOYMENT.md`](./DEPLOYMENT.md) | Deployment checklist & guide |
+| [`FILE_STRUCTURE.md`](./FILE_STRUCTURE.md) | Complete file tree |
+| [`ROADMAP_V3.md`](./ROADMAP_V3.md) | Product roadmap (v2.1 baseline → v3.3 AI) — living document |
+| [`UPGRADE_SUMMARY.md`](./UPGRADE_SUMMARY.md) | Migration/upgrade report |
 
-- 🌙 **Dark Mode**: Full dark mode support
-- ❤️ **Wishlist**: Save favorite products
-- 🔍 **Advanced Search**: Filter by category, price, rating
-- 🔔 **Real-time Notifications**: Toast notifications
-- 📱 **PWA**: Install as mobile app
-- 🎨 **Modern UI**: Framer Motion animations
-- ♿ **Accessibility**: WCAG 2.1 AA compliant
-
-#### Developer Features
-
-- 🛠️ **Type Safety**: Full TypeScript coverage
-- 🧪 **Testing**: Vitest + Testing Library setup
-- 📊 **Dev Tools**: React Query Devtools
-- 🔥 **Hot Reload**: Lightning-fast HMR
-- 📝 **ESLint + Prettier**: Code quality
-- 🎯 **Path Aliases**: Clean imports with @/
-
-### 5. **Security Enhancements**
-
-- 🔐 **JWT Token Management**: Secure auth flow
-- 🛡️ **Input Validation**: Zod schema validation
-- 🚫 **XSS Protection**: Sanitized inputs
-- 🔒 **HTTPS Only**: Secure communications
-- 👮 **Role-based Access**: Admin/User separation
-
-### 6. **State Management**
-
-#### Zustand Stores
-
-- `useAuthStore` - Authentication state
-- `useCartStore` - Shopping cart with persistence
-- `useWishlistStore` - Wishlist management
-- `useThemeStore` - Theme preferences
-
-#### React Query
-
-- Product queries with smart caching
-- Order mutations with optimistic updates
-- Background refetching
-- Automatic retry logic
-
-## 📦 Installation
-
-```bash
-# Clone the repository
-git clone <repo-url>
-cd classic-watch-upgraded
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your Firebase credentials
-
-# Start development server
-npm run dev
-```
-
-## 🔧 Environment Variables
-
-Create a `.env.local` file:
-
-```env
-# API
-VITE_API_BASE_URL=https://your-api-url.com
-
-# Firebase
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-
-# Optional
-VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_name
-VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_key
-```
-
-## 🎨 Available Scripts
-
-```bash
-npm run dev        # Start development server
-npm run build      # Build for production
-npm run preview    # Preview production build
-npm run lint       # Run ESLint
-npm run lint:fix   # Fix ESLint errors
-npm run format     # Format with Prettier
-npm run type-check # TypeScript type checking
-npm run test       # Run tests
-npm run test:ui    # Run tests with UI
-```
-
-## 🏗️ Build & Deploy
-
-```bash
-# Build for production
-npm run build
-
-# Preview production build locally
-npm run preview
-
-# The build folder will be in 'dist/'
-```
-
-```bash
-# Install Firebase CLI
-npm install -g firebase-tools
-
-# Login
-firebase login
-
-# Deploy
-firebase deploy
-```
-
-## 📚 Code Examples
-
-### Using Zustand Store
-
-```tsx
-import { useCartStore } from '@/store/cart.store';
-
-function AddToCartButton({ product }) {
-  const addItem = useCartStore((state) => state.addItem);
-
-  return <button onClick={() => addItem(product)}>Add to Cart</button>;
-}
-```
-
-### Using React Query
-
-```tsx
-import { useProducts } from '@/api/products.api';
-
-function ProductList() {
-  const { data, isLoading, error } = useProducts();
-
-  if (isLoading) return <Loading />;
-  if (error) return <Error />;
-
-  return (
-    <div>
-      {data.data.map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
-    </div>
-  );
-}
-```
-
-### Protected Routes
-
-```tsx
-import ProtectedRoute from '@/components/common/ProtectedRoute';
-
-<Route
-  path="/dashboard"
-  element={
-    <ProtectedRoute>
-      <Dashboard />
-    </ProtectedRoute>
-  }
-/>;
-```
-
-## 🎯 Key Improvements Over Old Version
-
-| Feature               | Old (v1.0)       | New (v2.0)            |
-| --------------------- | ---------------- | --------------------- |
-| **Build Tool**        | Create React App | Vite (10x faster)     |
-| **Language**          | JavaScript       | TypeScript            |
-| **Router**            | React Router v5  | React Router v6       |
-| **State**             | Context API      | Zustand + React Query |
-| **UI Library**        | MUI v4/v5 mixed  | MUI v6 (consistent)   |
-| **Forms**             | Basic validation | React Hook Form + Zod |
-| **Code Splitting**    | ❌ Manual        | ✅ Automatic          |
-| **Dark Mode**         | ❌ No            | ✅ Yes                |
-| **PWA**               | ❌ No            | ✅ Yes                |
-| **Type Safety**       | ❌ No            | ✅ 100% coverage      |
-| **Testing**           | Jest (basic)     | Vitest (faster)       |
-| **Bundle Size**       | ~500KB           | ~300KB (40% smaller)  |
-| **Build Time**        | ~60s             | ~18s (70% faster)     |
-| **Performance Score** | ~70              | ~95 (Lighthouse)      |
-
-## 🔥 Performance Benchmarks
-
-- **Initial Load**: 1.2s → **0.4s** (66% faster)
-- **Time to Interactive**: 2.8s → **0.9s** (68% faster)
-- **Bundle Size**: 498KB → **301KB** (40% smaller)
-- **Build Time**: 58s → **17s** (71% faster)
-- **Lighthouse Score**: 72 → **95** (+23 points)
-
-## 🛠️ Tech Stack Details
-
-### Frontend
-
-- React 18.3
-- TypeScript 5.6
-- Vite 5.4
-- MUI v6
-- React Router v6
-- Zustand 5.0
-- React Query 5.x
-- React Hook Form
-- Zod validation
-- Framer Motion
-- date-fns
-
-### Backend Integration
-
-- Firebase Auth
-- Firebase Firestore
-- Axios with interceptors
-- Service Worker (PWA)
-
-### Development Tools
-
-- ESLint
-- Prettier
-- Vitest
-- React Testing Library
-- TypeScript
-- Vite Plugin PWA
-
-## 🎓 Learning Resources
-
-- [Vite Documentation](https://vitejs.dev)
-- [React 18 Features](https://react.dev/blog/2022/03/29/react-v18)
-- [React Router v6 Guide](https://reactrouter.com)
-- [Zustand Documentation](https://docs.pmnd.rs/zustand)
-- [TanStack Query](https://tanstack.com/query)
-- [MUI v6 Components](https://mui.com)
+---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
+1. Fork the repository and create a feature branch.
+2. Keep changes small and covered by tests — run the quality gate above before pushing.
+3. Open a pull request describing the change and the verification performed.
 
 ## 📝 License
 
-MIT License - feel free to use this project for learning or commercial purposes.
-
-## 🙏 Credits
-
-Original project: Classic Watch Client
-Upgraded by: AI Assistant
-Version: 2.0.0
+MIT — free to use for learning or commercial purposes.
 
 ---
 
-## 🚀 Migration Guide (Old → New)
-
-### For Developers
-
-1. **Update Dependencies**
-
-   ```bash
-   rm -rf node_modules package-lock.json
-   npm install
-   ```
-
-2. **Migrate Environment Variables**
-   - Rename `.env` to `.env.local`
-   - Add `VITE_` prefix to all variables
-
-3. **Update Imports**
-
-   ```tsx
-   // Old
-   import Component from '../../components/Component';
-
-   // New
-   import Component from '@/components/Component';
-   ```
-
-4. **Update Route Syntax**
-
-   ```tsx
-   // Old (v5)
-   <Route path="/products">
-     <Products />
-   </Route>
-
-   // New (v6)
-   <Route path="/products" element={<Products />} />
-   ```
-
-5. **Replace useState with Zustand**
-
-   ```tsx
-   // Old
-   const [cart, setCart] = useState([]);
-
-   // New
-   const cart = useCartStore((state) => state.items);
-   const addItem = useCartStore((state) => state.addItem);
-   ```
-
-6. **Replace useEffect fetching with React Query**
-
-   ```tsx
-   // Old
-   useEffect(() => {
-     fetch('/api/products')
-       .then((res) => res.json())
-       .then(setProducts);
-   }, []);
-
-   // New
-   const { data: products } = useProducts();
-   ```
-
-## 📞 Support
-
-For issues or questions:
-
-- Open an issue on GitHub
-- Check documentation
-- Review code examples
-
----
+*Classic Watch Pro · v3.0.0 · built with ❤️ and a lot of ☕*

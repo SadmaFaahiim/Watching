@@ -75,29 +75,27 @@ export const calculateDiscount = (original: number, discounted: number): number 
 export const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
-};
-
-// Debounce function
-export const debounce = <T extends (...args: any[]) => any>(
-  func: T,
+};// Debounce function
+export const debounce = <A extends unknown[], R>(
+  func: (...args: A) => R,
   wait: number
-): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout | null = null;
-  
-  return (...args: Parameters<T>) => {
+): ((...args: A) => void) => {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  return (...args: A) => {
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
 };
 
 // Throttle function
-export const throttle = <T extends (...args: any[]) => any>(
-  func: T,
+export const throttle = <A extends unknown[], R>(
+  func: (...args: A) => R,
   limit: number
-): ((...args: Parameters<T>) => void) => {
-  let inThrottle: boolean;
-  
-  return (...args: Parameters<T>) => {
+): ((...args: A) => void) => {
+  let inThrottle = false;
+
+  return (...args: A) => {
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
@@ -112,7 +110,7 @@ export const deepClone = <T>(obj: T): T => {
 };
 
 // Check if object is empty
-export const isEmpty = (obj: Record<string, any>): boolean => {
+export const isEmpty = (obj: Record<string, unknown>): boolean => {
   return Object.keys(obj).length === 0;
 };
 
@@ -149,14 +147,16 @@ export const unique = <T>(array: T[]): T[] => {
 };
 
 // Sort array of objects by key
-export const sortBy = <T extends Record<string, any>>(
+export const sortBy = <T extends Record<string, unknown>>(
   array: T[],
   key: keyof T,
   direction: 'asc' | 'desc' = 'asc'
 ): T[] => {
   return [...array].sort((a, b) => {
-    if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
-    if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+    const aValue = a[key] as string | number;
+    const bValue = b[key] as string | number;
+    if (aValue < bValue) return direction === 'asc' ? -1 : 1;
+    if (aValue > bValue) return direction === 'asc' ? 1 : -1;
     return 0;
   });
 };

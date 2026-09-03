@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
+import { mockApiEnabled } from '@/config';
 import LoadingScreen from './LoadingScreen';
 import { Box, Typography, Button, Container } from '@mui/material';
 import { LockOutlined } from '@mui/icons-material';
@@ -10,7 +11,7 @@ interface AdminRouteProps {
 }
 
 const AdminRoute = ({ children }: AdminRouteProps) => {
-  const { isAuthenticated, isAdmin, isLoading } = useAuthStore();
+  const { user, isAuthenticated, isAdmin, isLoading } = useAuthStore();
   const location = useLocation();
 
   if (isLoading) {
@@ -19,6 +20,11 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Same route-level email-verification gate as ProtectedRoute.
+  if (user && user.emailVerified === false && !mockApiEnabled) {
+    return <Navigate to="/verify-email" state={{ from: location }} replace />;
   }
 
   if (!isAdmin) {
@@ -40,14 +46,10 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
             Access Denied
           </Typography>
           <Typography variant="body1" color="text.secondary" maxWidth="400px">
-            You don't have permission to access this page. This area is restricted to administrators only.
+            You don't have permission to access this page. This area is restricted to administrators
+            only.
           </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            href="/"
-            sx={{ mt: 2 }}
-          >
+          <Button variant="contained" size="large" href="/" sx={{ mt: 2 }}>
             Back to Home
           </Button>
         </Box>

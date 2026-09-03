@@ -27,6 +27,8 @@ const Cart = lazy(() => import('@/features/cart/pages/CartPage'));
 const Checkout = lazy(() => import('@/features/cart/pages/CheckoutPage'));
 const Login = lazy(() => import('@/features/auth/pages/LoginPage'));
 const Register = lazy(() => import('@/features/auth/pages/RegisterPage'));
+const ForgotPassword = lazy(() => import('@/features/auth/pages/ForgotPasswordPage'));
+const VerifyEmail = lazy(() => import('@/features/auth/pages/VerifyEmailPage'));
 const Dashboard = lazy(() => import('@/features/dashboard/pages/DashboardPage'));
 const MyOrders = lazy(() => import('@/features/orders/pages/MyOrdersPage'));
 const OrderDetail = lazy(() => import('@/features/orders/pages/OrderDetailPage'));
@@ -85,10 +87,18 @@ function App() {
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
                 </Route>
 
                 {/* Protected routes with MainLayout */}
-                <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <MainLayout />
+                    </ProtectedRoute>
+                  }
+                >
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/profile" element={<Profile />} />
@@ -96,13 +106,25 @@ function App() {
                 </Route>
 
                 {/* Dashboard routes with DashboardLayout */}
-                <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <DashboardLayout />
+                    </ProtectedRoute>
+                  }
+                >
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/dashboard/orders" element={<MyOrders />} />
                 </Route>
 
                 {/* Admin routes with DashboardLayout */}
-                <Route element={<AdminRoute><DashboardLayout /></AdminRoute>}>
+                <Route
+                  element={
+                    <AdminRoute>
+                      <DashboardLayout />
+                    </AdminRoute>
+                  }
+                >
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/products" element={<ManageProducts />} />
                   <Route path="/admin/products/add" element={<AddProduct />} />
