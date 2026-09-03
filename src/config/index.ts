@@ -1,5 +1,34 @@
+const hasFirebaseCredentials = Boolean(
+  import.meta.env.VITE_FIREBASE_API_KEY &&
+  import.meta.env.VITE_FIREBASE_PROJECT_ID &&
+  import.meta.env.VITE_FIREBASE_APP_ID
+);
+
+// Demo mode: serve the whole storefront from an in-memory mock API.
+// Enabled explicitly via VITE_ENABLE_MOCK_API=true, or automatically whenever
+// no Firebase credentials are configured — in development AND in production
+// builds, so a deployed demo is fully self-contained instead of pointing at a
+// dead backend. Configuring real Firebase credentials flips it off.
+export const mockApiEnabled =
+  import.meta.env.VITE_ENABLE_MOCK_API === 'true' || !hasFirebaseCredentials;
+
+export const demoUserId = 'demo-user';
+
+export const demoUser = {
+  id: demoUserId,
+  email: 'demo@classicwatch.local',
+  displayName: 'Demo Admin',
+  photoURL: undefined,
+  role: 'admin' as const,
+  emailVerified: true,
+  mfaEnabled: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
 interface Config {
   apiBaseUrl: string;
+  mockApiEnabled: boolean;
   firebase: {
     apiKey: string;
     authDomain: string;
@@ -23,7 +52,8 @@ interface Config {
 
 const config: Config = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'https://classic-watch-server.onrender.com',
-  
+  mockApiEnabled,
+
   firebase: {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,

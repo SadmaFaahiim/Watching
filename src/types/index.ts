@@ -1,3 +1,38 @@
+// Audit trail entries — every meaningful state change (fulfilment status,
+// role changes, cancellations, refunds) appends an immutable event. Kept
+// optional so records served by a backend without audit support still typecheck.
+export interface AuditEvent {
+  at: Date;
+  actor: string;
+  action: string;
+  detail?: string;
+}
+
+// Two-factor authentication / passkeys
+export interface PasskeyCredentialData {
+  /** Base64url-encoded COSE public key returned by the authenticator. */
+  publicKey: string;
+  /** COSE algorithm identifier (e.g. -7 = ES256). */
+  publicKeyAlgorithm: number;
+  /** Signature counter from the last verified assertion. */
+  counter: number;
+  /** Authenticator attachment hints reported at registration. */
+  transports?: string[];
+  /** Authenticator AAGUID (base64url) when provided. */
+  aaguid?: string;
+}
+
+export interface PasskeyRecord {
+  id: string;
+  /** Human-readable device label, e.g. "MacBook Pro". */
+  name: string;
+  createdAt: Date;
+  /** Set when the passkey was created through a real WebAuthn ceremony. */
+  isWebAuthn?: boolean;
+  /** Real credential material for WebAuthn verification (isWebAuthn only). */
+  credential?: PasskeyCredentialData;
+}
+
 // User Types
 export interface User {
   id: string;
@@ -5,6 +40,14 @@ export interface User {
   displayName: string;
   photoURL?: string;
   role: 'user' | 'admin';
+  /** Whether the email address has been verified (Firebase email/password accounts). */
+  emailVerified: boolean;
+  /** TOTP two-factor authentication is enabled. */
+  mfaEnabled: boolean;
+  mfaEnrolledAt?: Date;
+  /** Registered passkeys (demo mode only; Firebase passkeys are a platform beta). */
+  passkeys?: PasskeyRecord[];
+  history?: AuditEvent[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -14,6 +57,8 @@ export interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  /** Set when sign-in needs a second factor (TOTP code or passkey). */
+  pendingMfa?: { email: string; mode: 'totp' | 'passkey'; passkeyAvailable?: boolean } | null;
 }
 
 // Product Types
@@ -89,6 +134,8 @@ export interface Order {
   paymentMethod: 'card' | 'cod' | 'wallet';
   trackingNumber?: string;
   notes?: string;
+  /** Chronological audit trail of fulfilment / payment events (oldest first). */
+  history?: AuditEvent[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -126,14 +173,8 @@ export interface ProductFilters {
   isFeatured?: boolean;
 }
 
-export type SortOption = 
-  | 'newest' 
-  | 'price-low' 
-  | 'price-high' 
-  | 'rating' 
-  | 'popular' 
-  | 'name-az' 
-  | 'name-za';
+export type SortOption =
+  'newest' | 'price-low' | 'price-high' | 'rating' | 'popular' | 'name-az' | 'name-za';
 
 // API Response Types
 export interface ApiResponse<T> {

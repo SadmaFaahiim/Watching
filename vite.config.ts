@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -5,10 +6,25 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  test: {
+    environment: 'node',
+    environmentMatchGlobs: [
+      ['src/features/**/*.test.tsx', 'jsdom'],
+      ['src/components/**/*.test.tsx', 'jsdom'],
+    ],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    setupFiles: ['./src/test/setup.ts', './src/test/setup-jsdom.ts'],
+    coverage: {
+      reporter: ['text', 'html'],
+    },
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Inline the tiny SW-registration snippet instead of a separate
+      // registerSW.js request (render-blocking on first load).
+      injectRegister: 'inline',
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: 'Classic Watch Pro',
@@ -21,14 +37,14 @@ export default defineConfig({
           {
             src: '/icon-192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
           },
           {
             src: '/icon-512.png',
             sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
+            type: 'image/png',
+          },
+        ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
@@ -40,12 +56,12 @@ export default defineConfig({
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
               },
               cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
+                statuses: [0, 200],
+              },
+            },
           },
           {
             urlPattern: /^https:\/\/.*\.cloudinary\.com\/.*/i,
@@ -54,9 +70,9 @@ export default defineConfig({
               cacheName: 'cloudinary-images-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              }
-            }
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+            },
           },
           {
             urlPattern: /\/api\/.*/i,
@@ -66,13 +82,13 @@ export default defineConfig({
               networkTimeoutSeconds: 10,
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutes
-              }
-            }
-          }
-        ]
-      }
-    })
+                maxAgeSeconds: 60 * 5, // 5 minutes
+              },
+            },
+          },
+        ],
+      },
+    }),
   ],
   resolve: {
     alias: {
@@ -85,8 +101,8 @@ export default defineConfig({
       '@/utils': path.resolve(__dirname, './src/utils'),
       '@/store': path.resolve(__dirname, './src/store'),
       '@/api': path.resolve(__dirname, './src/api'),
-      '@/assets': path.resolve(__dirname, './src/assets')
-    }
+      '@/assets': path.resolve(__dirname, './src/assets'),
+    },
   },
   build: {
     rollupOptions: {
@@ -96,9 +112,9 @@ export default defineConfig({
           'mui-vendor': ['@mui/material', '@mui/icons-material'],
           'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
           'query-vendor': ['@tanstack/react-query'],
-          'form-vendor': ['react-hook-form', 'zod', '@hookform/resolvers']
-        }
-      }
+          'form-vendor': ['react-hook-form', 'zod', '@hookform/resolvers'],
+        },
+      },
     },
     chunkSizeWarningLimit: 1000,
     sourcemap: false,
@@ -106,15 +122,15 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
-      }
-    }
+        drop_debugger: true,
+      },
+    },
   },
   server: {
     port: 3000,
-    open: true
+    open: true,
   },
   preview: {
-    port: 4173
-  }
+    port: 4173,
+  },
 });

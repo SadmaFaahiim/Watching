@@ -46,3 +46,6 @@ firebase-debug.log*
 
 # Misc
 *.tsbuildinfo
+
+# Freebuff client metadata
+.freebuff

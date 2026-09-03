@@ -8,7 +8,7 @@ module.exports = {
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs'],
   parser: '@typescript-eslint/parser',
-  plugins: ['react-refresh'],
+  plugins: ['react-refresh', 'security'],
   rules: {
     'react-refresh/only-export-components': [
       'warn',
@@ -16,5 +16,10 @@ module.exports = {
     ],
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+
+    // Security guardrails: keep these green going forward.
+    'security/detect-eval-with-expression': 'error',
+    'security/detect-unsafe-regex': 'error',
+    'security/detect-non-literal-regexp': 'error',
   },
 }

@@ -63,7 +63,7 @@ export const useThemeStore = create<ThemeStore>()(
 if (typeof window !== 'undefined') {
   window
     .matchMedia('(prefers-color-scheme: dark)')
-    .addEventListener('change', (e) => {
+    .addEventListener('change', () => {
       const store = useThemeStore.getState();
       if (store.mode === 'system') {
         store.setMode('system');

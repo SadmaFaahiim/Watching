@@ -1,13 +1,18 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { motion } from 'framer-motion';
 
 interface LoadingScreenProps {
   message?: string;
 }
 
+// Pure CSS/CircularProgress loading state — no animation library on the
+// critical path (framer-motion previously lived here and rode the eager
+// bundle just for a fade-in).
 const LoadingScreen = ({ message = 'Loading...' }: LoadingScreenProps) => {
   return (
     <Box
+      role="status"
+      aria-label={message}
+      className="fade-in"
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -17,27 +22,11 @@ const LoadingScreen = ({ message = 'Loading...' }: LoadingScreenProps) => {
         gap: 3,
       }}
     >
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <CircularProgress size={60} thickness={4} />
-      </motion.div>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.3 }}
-      >
-        <Typography
-          variant="h6"
-          color="text.secondary"
-          fontWeight="medium"
-        >
-          {message}
-        </Typography>
-      </motion.div>
+      <CircularProgress size={60} thickness={4} />
+
+      <Typography variant="h6" color="text.secondary" fontWeight="medium">
+        {message}
+      </Typography>
     </Box>
   );
 };

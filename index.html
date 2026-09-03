@@ -2,49 +2,541 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
+
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Classic Watch Pro - Premium luxury watch e-commerce platform. Discover the finest collection of luxury watches." />
-    <meta name="keywords" content="watches, luxury watches, classic watches, timepieces, e-commerce" />
+    <meta
+      name="description"
+      content="Classic Watch Pro - Premium luxury watch e-commerce platform. Discover the finest collection of luxury watches."
+    />
+    <meta
+      name="keywords"
+      content="watches, luxury watches, classic watches, timepieces, e-commerce"
+    />
     <meta name="author" content="Classic Watch Team" />
-    
+
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="Classic Watch Pro - Luxury Timepieces" />
     <meta property="og:description" content="Discover the finest collection of luxury watches" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/og-image.jpg" />
-    
+    <meta property="og:image" content="/og-image.png" />
+
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Classic Watch Pro - Luxury Timepieces" />
     <meta name="twitter:description" content="Discover the finest collection of luxury watches" />
-    
+    <meta name="twitter:image" content="/og-image.png" />
+
     <!-- Theme Color -->
     <meta name="theme-color" content="#3867D6" />
-    
+
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-    
+
+    <!-- Manifest (vite-plugin-pwa emits manifest.webmanifest) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
     <!-- Preconnect to improve performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    
-    <!-- Google Fonts -->
-    <link 
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" 
-      rel="stylesheet" 
+
+    <!-- Google Fonts — fetched async so the stylesheet never blocks first
+         paint; display=swap renders fallback text immediately and swaps in
+         Inter when ready. -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     />
-    
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      />
+    </noscript>
+
     <title>Classic Watch Pro - Luxury Timepieces</title>
+
+    <!-- Critical CSS — inlined so first paint never waits on a stylesheet
+         request (source of truth lives here; the SPA's runtime styles are
+         injected by MUI after mount). -->
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+        background: #f9fafb;
+      }
+
+      html.dark body {
+        background: #0f172a;
+      }
+
+      /* Remove spinner from number inputs */
+      input[type='number']::-webkit-inner-spin-button,
+      input[type='number']::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      input[type='number'] {
+        -moz-appearance: textfield;
+      }
+
+      /* Scrollbar styles */
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      /* Dark mode scrollbar */
+      .dark ::-webkit-scrollbar-track {
+        background: #1e293b;
+      }
+
+      .dark ::-webkit-scrollbar-thumb {
+        background: #475569;
+      }
+
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+      }
+
+      /* Selection styles */
+      ::selection {
+        background-color: #3867d6;
+        color: white;
+      }
+
+      /* Focus visible styles */
+      :focus-visible {
+        outline: 2px solid #3867d6;
+        outline-offset: 2px;
+      }
+
+      /* Image optimization */
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      /* Link styles */
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      /* Button reset */
+      button {
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      /* Utility classes */
+      .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1rem;
+      }
+
+      .text-truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* Animation utilities */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      .slide-up {
+        animation: slideUp 0.4s ease-out;
+      }
+
+      /* Loading animation */
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .animate-spin {
+        animation: spin 1s linear infinite;
+      }
+
+      /* Skeleton loading */
+      .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s ease-in-out infinite;
+      }
+
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      .dark .skeleton {
+        background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+        background-size: 200% 100%;
+      }
+
+      /* Print styles */
+      @media print {
+        body {
+          background: white;
+        }
+
+        .no-print {
+          display: none !important;
+        }
+      }
+
+      /* ---------------------------------------------------------------
+         App shell — paints the brand bar + hero before JS executes so the
+         landing viewport is never blank. React replaces #root on mount.
+         --------------------------------------------------------------- */
+      .shell {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #f9fafb;
+      }
+
+      html.dark .shell {
+        background: #0f172a;
+      }
+
+      .shell-header {
+        height: 64px;
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      html.dark .shell-header {
+        background: #0f172a;
+        border-bottom-color: #1e293b;
+      }
+
+      .shell-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 1.05rem;
+        letter-spacing: -0.01em;
+        color: #1f2937;
+      }
+
+      html.dark .shell-brand {
+        color: #f1f5f9;
+      }
+
+      .shell-brand-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3867d6 0%, #2849a5 100%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 14px;
+      }
+
+      .shell-hero {
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #2849a5 100%);
+        flex: 1;
+      }
+
+      /* Deep links land on routes whose real layout has no hero — showing it
+         pre-JS would shift the page when React mounts, so only the slim brand
+         bar stays visible as the loading chrome. */
+      .shell-compact .shell-hero {
+        display: none;
+      }
+
+      .shell-hero-glow {
+        position: absolute;
+        width: 520px;
+        height: 520px;
+        border-radius: 50%;
+        right: -140px;
+        top: -160px;
+        background: radial-gradient(circle, rgba(243, 156, 18, 0.22) 0%, transparent 65%);
+        pointer-events: none;
+      }
+
+      .shell-hero-inner {
+        position: relative;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 64px 24px 96px;
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: center;
+      }
+
+      @media (min-width: 900px) {
+        .shell-hero-inner {
+          grid-template-columns: 7fr 5fr;
+          padding: 96px 24px 120px;
+        }
+      }
+
+      .shell-hero-overline {
+        display: block;
+        color: #f5b041;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .shell-hero h1 {
+        margin-top: 10px;
+        font-size: 2.4rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+      }
+
+      @media (min-width: 900px) {
+        .shell-hero h1 {
+          font-size: 3.4rem;
+        }
+      }
+
+      .shell-hero p {
+        margin-top: 16px;
+        max-width: 560px;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .shell-hero-actions {
+        margin-top: 32px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .shell-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 22px;
+        border-radius: 10px;
+        font-size: 0.925rem;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      .shell-btn-primary {
+        color: #fff;
+        background: linear-gradient(135deg, #3867d6 0%, #2849a5 100%);
+      }
+
+      .shell-btn-outline {
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+
+      .shell-btn-outline:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #fff;
+      }
+
+      .shell-hero-ring {
+        display: none;
+        justify-content: center;
+      }
+
+      @media (min-width: 900px) {
+        .shell-hero-ring {
+          display: flex;
+        }
+      }
+
+      .shell-hero-ring-outer {
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        border: 2px dashed rgba(255, 255, 255, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .shell-hero-ring-inner {
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .shell-hero-watch {
+        font-size: 96px;
+        line-height: 1;
+        color: rgba(255, 255, 255, 0.9);
+      }
+    </style>
+
+    <!-- Apply the persisted theme before first paint so the shell matches. -->
+    <script>
+      (function () {
+        try {
+          var stored = JSON.parse(localStorage.getItem('theme-storage') || '{}');
+          var mode = stored.state && stored.state.mode;
+          var dark =
+            mode === 'dark' ||
+            ((!mode || mode === 'system') &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {
+          /* storage unavailable — fall back to light shell */
+        }
+        // Only the landing route shows the hero pre-JS; other routes keep the
+        // slim brand bar so the shell swap causes no layout shift.
+        try {
+          if (window.location.pathname !== '/') {
+            var shell = document.getElementById('app-shell');
+            if (shell) shell.classList.add('shell-compact');
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <div class="shell" id="app-shell">
+        <header class="shell-header">
+          <div class="shell-brand">
+            <span class="shell-brand-mark" aria-hidden="true">◉</span>
+            Classic Watch Pro
+          </div>
+        </header>
+        <section class="shell-hero" aria-label="Welcome">
+          <div class="shell-hero-glow" aria-hidden="true"></div>
+          <div class="shell-hero-inner">
+            <div>
+              <span class="shell-hero-overline">The finest timepieces</span>
+              <h1>Time, perfected.</h1>
+              <p>
+                Discover a hand-picked collection of luxury watches — certified authentic, expertly
+                curated, and delivered with complete peace of mind.
+              </p>
+              <div class="shell-hero-actions">
+                <a class="shell-btn shell-btn-primary" href="/products">Shop Collection</a>
+                <a class="shell-btn shell-btn-outline" href="/products?category=luxury"
+                  >Explore Luxury</a
+                >
+              </div>
+            </div>
+            <div class="shell-hero-ring" aria-hidden="true">
+              <div class="shell-hero-ring-outer">
+                <div class="shell-hero-ring-inner">
+                  <span class="shell-hero-watch">⌚</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
