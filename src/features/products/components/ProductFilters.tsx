@@ -117,6 +117,9 @@ const ProductFilters = ({ value, onChange, onClear }: ProductFiltersProps) => {
         step={PRICE_SLIDER_STEP}
         valueLabelDisplay="auto"
         valueLabelFormat={(value) => formatCurrency(value)}
+        // Range thumbs are individual inputs — give each an accessible name
+        // (the component renders twice: desktop panel + mobile drawer).
+        getAriaLabel={(index) => (index === 0 ? 'Minimum price' : 'Maximum price')}
         onChange={(_, newValue) => setLocalPrice(newValue as [number, number])}
         onChangeCommitted={(_, newValue) => handlePriceCommit(newValue)}
         disableSwap

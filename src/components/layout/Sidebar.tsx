@@ -5,6 +5,7 @@ import {
   Box,
   Divider,
   List,
+  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -76,6 +77,8 @@ const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
 
   return (
     <Box
+      component="nav"
+      aria-label="Account navigation"
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -98,23 +101,32 @@ const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
 
       <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
         {sections.map((section) => (
-          <Box key={section.title} sx={{ mb: 1 }}>
-            <ListSubheader
-              disableSticky
-              sx={{
-                bgcolor: 'transparent',
-                fontWeight: 700,
-                color: 'text.secondary',
-                textTransform: 'uppercase',
-                fontSize: '0.72rem',
-              }}
-            >
-              {section.title}
-            </ListSubheader>
-            <List dense disablePadding>
-              {section.links.map((link) => (
+          <List
+            key={section.title}
+            dense
+            disablePadding
+            sx={{ mb: 1 }}
+            subheader={
+              <ListSubheader
+                disableSticky
+                sx={{
+                  bgcolor: 'transparent',
+                  fontWeight: 700,
+                  color: 'text.secondary',
+                  textTransform: 'uppercase',
+                  fontSize: '0.72rem',
+                  lineHeight: '32px',
+                }}
+              >
+                {section.title}
+              </ListSubheader>
+            }
+          >
+            {/* ListItem wrappers keep the anchors valid <li> children of the
+                <ul> (axe 'list' rule — bare anchors inside <ul> are invalid). */}
+            {section.links.map((link) => (
+              <ListItem key={link.to} disablePadding sx={{ display: 'block' }}>
                 <ListItemButton
-                  key={link.to}
                   component={RouterLink}
                   to={link.to}
                   selected={isActive(link.to)}
@@ -137,9 +149,9 @@ const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
                     primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 500 }}
                   />
                 </ListItemButton>
-              ))}
-            </List>
-          </Box>
+              </ListItem>
+            ))}
+          </List>
         ))}
       </Box>
 

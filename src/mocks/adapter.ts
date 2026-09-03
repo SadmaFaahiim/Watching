@@ -11,7 +11,10 @@ import {
   seedUsers,
 } from './data';
 
-const LATENCY_MS = 120;
+// Short artificial latency keeps a realistic loading state without paying a
+// main-thread tax on every route (the mock DB is local, so 40ms reads as
+// instant while still exercising skeletons/loading states).
+const LATENCY_MS = 40;
 
 const wait = (ms: number): Promise<void> =>
   new Promise((resolve) => {

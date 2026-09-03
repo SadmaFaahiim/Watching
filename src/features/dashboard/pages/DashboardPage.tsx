@@ -67,7 +67,9 @@ const DashboardPage = () => {
                   <stat.icon sx={{ color: stat.color }} />
                 </Paper>
                 <Box>
-                  <Typography variant="h5" fontWeight={800} lineHeight={1.2}>
+                  {/* KPI figures are data, not document headings — render
+                      them outside the heading outline. */}
+                  <Typography component="div" variant="h5" fontWeight={800} lineHeight={1.2}>
                     {stat.value}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -84,7 +86,7 @@ const DashboardPage = () => {
         {/* Recent orders */}
         <Grid item xs={12} lg={8}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-            <Typography variant="h6" fontWeight={700}>
+            <Typography variant="h6" component="h2" fontWeight={700}>
               Recent orders
             </Typography>
             <Button
@@ -155,7 +157,7 @@ const DashboardPage = () => {
 
         {/* Quick actions */}
         <Grid item xs={12} lg={4}>
-          <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+          <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
             Quick actions
           </Typography>
           <Stack spacing={1.5}>

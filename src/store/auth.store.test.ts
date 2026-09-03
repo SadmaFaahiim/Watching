@@ -37,6 +37,7 @@ vi.mock('firebase/auth', () => ({
 }));
 
 vi.mock('@/lib/firebase', () => ({
+  initializeFirebase: async () => undefined,
   getFirebaseAuth: () => mocks.firebaseAuth,
 }));
 
@@ -82,6 +83,8 @@ describe('auth store', () => {
     mocks.apiGet.mockResolvedValue({ data: [{ role: 'user' }] });
 
     useAuthStore.getState().initialize();
+    // initialize() resolves Firebase lazily before subscribing — let it settle.
+    await flushPromises();
     authListener?.(null);
     await flushPromises();
 
@@ -99,6 +102,8 @@ describe('auth store', () => {
     mocks.apiGet.mockResolvedValue({ data: [{ role: 'admin' }] });
 
     useAuthStore.getState().initialize();
+    // initialize() resolves Firebase lazily before subscribing — let it settle.
+    await flushPromises();
     authListener?.(fakeFirebaseUser);
     await flushPromises();
 

@@ -254,7 +254,7 @@ const CheckoutPage = () => {
           <Paper variant="outlined" sx={{ p: { xs: 2, md: 3.5 } }}>
             {activeStep === 0 && (
               <>
-                <Typography variant="h6" fontWeight={700} sx={{ mb: 2.5 }}>
+                <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2.5 }}>
                   Shipping details
                 </Typography>
                 <Grid container spacing={2}>
@@ -342,7 +342,7 @@ const CheckoutPage = () => {
 
             {activeStep === 1 && (
               <>
-                <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
                   Payment method
                 </Typography>
                 <Controller
@@ -424,7 +424,7 @@ const CheckoutPage = () => {
 
             {activeStep === 2 && (
               <>
-                <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
                   Review your order
                 </Typography>
                 <Stack spacing={0.5} sx={{ mb: 3 }}>
@@ -505,7 +505,7 @@ const CheckoutPage = () => {
         {/* Summary */}
         <Grid item xs={12} md={5}>
           <Paper variant="outlined" sx={{ p: 3, position: 'sticky', top: 96 }}>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+            <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
               Summary
             </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -524,10 +524,11 @@ const CheckoutPage = () => {
             </Box>
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="h6" fontWeight={700}>
+              {/* Summary totals are data labels, not document headings. */}
+              <Typography component="div" variant="h6" fontWeight={700}>
                 Total
               </Typography>
-              <Typography variant="h6" fontWeight={800} color="primary.main">
+              <Typography component="div" variant="h6" fontWeight={800} color="primary.main">
                 {formatCurrency(grandTotal)}
               </Typography>
             </Box>

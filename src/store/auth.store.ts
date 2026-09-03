@@ -1,25 +1,17 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut as firebaseSignOut,
-  updateProfile,
-  sendPasswordResetEmail,
-  sendEmailVerification as firebaseSendEmailVerification,
-  onAuthStateChanged,
-  multiFactor,
-  getMultiFactorResolver,
-  TotpMultiFactorGenerator,
+// firebase/auth is imported lazily (see loadFirebaseAuth) so demo mode never
+// loads the SDK on the critical path — only type-only imports live here.
+import type {
   Auth,
+  MultiFactorError,
   User as FirebaseUser,
   MultiFactorResolver,
   TotpSecret,
 } from 'firebase/auth';
-import { getFirebaseAuth } from '@/lib/firebase';
+import { getFirebaseAuth, initializeFirebase } from '@/lib/firebase';
+import { loadFirebaseAuth } from '@/lib/firebaseAuth';
 import {
   generateChallenge,
   runPasskeyRegistration,
@@ -90,8 +82,18 @@ const isMfaRequiredError = (error: unknown): boolean => {
   );
 };
 
-const auth = getFirebaseAuth();
-const googleProvider = new GoogleAuthProvider();
+// Firebase auth instance — resolved lazily on first use (initializeFirebase is
+// async now, so the store can no longer capture it synchronously at module
+// load). `null` means Firebase is unconfigured (demo mode).
+let auth: Auth | null = null;
+let authResolved = false;
+
+const ensureAuthResolved = async (): Promise<void> => {
+  if (authResolved) return;
+  await initializeFirebase();
+  auth = getFirebaseAuth() ?? null;
+  authResolved = true;
+};
 
 // Firebase may be unconfigured in development (no .env.local yet).
 const ensureAuth = (): Auth => {
@@ -104,14 +106,17 @@ const ensureAuth = (): Auth => {
 };
 
 // Helper function to convert Firebase user to app user
-const convertFirebaseUser = (firebaseUser: FirebaseUser): User => ({
+const convertFirebaseUser = (
+  firebaseUser: FirebaseUser,
+  fb: typeof import('firebase/auth')
+): User => ({
   id: firebaseUser.uid,
   email: firebaseUser.email || '',
   displayName: firebaseUser.displayName || '',
   photoURL: firebaseUser.photoURL || undefined,
   role: 'user', // Will be updated by checkAdminStatus
   emailVerified: firebaseUser.emailVerified === true,
-  mfaEnabled: multiFactor(firebaseUser).enrolledFactors.length > 0,
+  mfaEnabled: fb.multiFactor(firebaseUser).enrolledFactors.length > 0,
   createdAt: new Date(firebaseUser.metadata.creationTime || Date.now()),
   updatedAt: new Date(),
 });
@@ -141,7 +146,8 @@ export const useAuthStore = create<AuthStore>()(
       isAdmin: false,
       pendingMfa: null,
 
-      initialize: () => {
+      initialize: async () => {
+        await ensureAuthResolved();
         if (!auth) {
           if (mockApiEnabled) {
             // Demo mode: resume the active demo session (or sign the built-in
@@ -159,9 +165,10 @@ export const useAuthStore = create<AuthStore>()(
           }
           return;
         }
-        onAuthStateChanged(auth, async (firebaseUser) => {
+        const fb = await loadFirebaseAuth();
+        fb.onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
-            const user = convertFirebaseUser(firebaseUser);
+            const user = convertFirebaseUser(firebaseUser, fb);
             set({ user, isAuthenticated: true, isLoading: false });
 
             // Check admin status
@@ -180,6 +187,7 @@ export const useAuthStore = create<AuthStore>()(
       signIn: async (email: string, password: string) => {
         try {
           set({ isLoading: true });
+          await ensureAuthResolved();
           if (!auth && mockApiEnabled) {
             const user = await demoAuthenticate(email, password);
             const passkeyAvailable = (user.passkeys?.length ?? 0) > 0;
@@ -203,18 +211,17 @@ export const useAuthStore = create<AuthStore>()(
             });
             return;
           }
-          const result = await signInWithEmailAndPassword(ensureAuth(), email, password);
-          const user = convertFirebaseUser(result.user);
+          const fb = await loadFirebaseAuth();
+          const result = await fb.signInWithEmailAndPassword(ensureAuth(), email, password);
+          const user = convertFirebaseUser(result.user, fb);
 
           set({ user, isAuthenticated: true, isLoading: false, pendingMfa: null });
           await get().checkAdminStatus(email);
         } catch (error) {
           if (isMfaRequiredError(error) && auth) {
             try {
-              pendingMfaResolver = getMultiFactorResolver(
-                auth,
-                error as Parameters<typeof getMultiFactorResolver>[1]
-              );
+              const fb = await loadFirebaseAuth();
+              pendingMfaResolver = fb.getMultiFactorResolver(auth, error as MultiFactorError);
               set({ isLoading: false, pendingMfa: { email, mode: 'totp' } });
               return;
             } catch {
@@ -227,6 +234,7 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       verifyMfaChallenge: async (code: string) => {
+        await ensureAuthResolved();
         if (!auth && mockApiEnabled) {
           const pending = get().pendingMfa;
           if (!pending?.email) throw new Error('No pending two-factor challenge.');
@@ -252,12 +260,13 @@ export const useAuthStore = create<AuthStore>()(
           return;
         }
         if (!pendingMfaResolver) throw new Error('No pending two-factor challenge.');
+        const fb = await loadFirebaseAuth();
         const enrollmentId = pendingMfaResolver.hints[0]?.uid ?? '';
-        const assertion = TotpMultiFactorGenerator.assertionForSignIn(enrollmentId, code.trim());
+        const assertion = fb.TotpMultiFactorGenerator.assertionForSignIn(enrollmentId, code.trim());
         const result = await pendingMfaResolver.resolveSignIn(assertion);
         pendingMfaResolver = null;
         pendingTotpSecret = null;
-        const user = convertFirebaseUser(result.user);
+        const user = convertFirebaseUser(result.user, fb);
         set({ user, isAuthenticated: true, isLoading: false, pendingMfa: null });
         await get().checkAdminStatus(user.email);
       },
@@ -280,7 +289,10 @@ export const useAuthStore = create<AuthStore>()(
           // Genuine WebAuthn ceremony — the authenticator proves user presence
           // and the assertion signature is verified against the stored key.
           const challenge = generateChallenge();
-          const response = await runPasskeyAuthentication({ challenge, allowCredentials: realPasskeys });
+          const response = await runPasskeyAuthentication({
+            challenge,
+            allowCredentials: realPasskeys,
+          });
           const record = account.passkeys?.find((item) => item.id === response.id);
           if (!record) {
             throw new Error('This passkey is not registered for the account.');
@@ -315,14 +327,16 @@ export const useAuthStore = create<AuthStore>()(
       enableTotp: async () => {
         if (!auth && mockApiEnabled) {
           const current = get().user;
-          if (!current) throw new Error('You must be signed in to enable two-factor authentication.');
+          if (!current)
+            throw new Error('You must be signed in to enable two-factor authentication.');
           return demoEnableTotp(current.id);
         }
         const current = ensureAuth().currentUser;
         if (!current) throw new Error('You must be signed in to enable two-factor authentication.');
-        const mfaUser = multiFactor(current);
+        const fb = await loadFirebaseAuth();
+        const mfaUser = fb.multiFactor(current);
         const session = await mfaUser.getSession();
-        const secret = await TotpMultiFactorGenerator.generateSecret(session);
+        const secret = await fb.TotpMultiFactorGenerator.generateSecret(session);
         pendingTotpSecret = secret;
         return {
           secret: secret.secretKey,
@@ -333,7 +347,8 @@ export const useAuthStore = create<AuthStore>()(
       confirmTotp: async (code: string) => {
         if (!auth && mockApiEnabled) {
           const current = get().user;
-          if (!current) throw new Error('You must be signed in to enable two-factor authentication.');
+          if (!current)
+            throw new Error('You must be signed in to enable two-factor authentication.');
           demoConfirmTotp(current.id, code);
           set((state) => {
             if (state.user) {
@@ -346,10 +361,13 @@ export const useAuthStore = create<AuthStore>()(
         if (!pendingTotpSecret) throw new Error('Start enrollment before confirming.');
         const current = ensureAuth().currentUser;
         if (!current) throw new Error('You must be signed in to enable two-factor authentication.');
-        await multiFactor(current).enroll(
-          TotpMultiFactorGenerator.assertionForEnrollment(pendingTotpSecret, code.trim()),
-          'TOTP'
-        );
+        const fb = await loadFirebaseAuth();
+        await fb
+          .multiFactor(current)
+          .enroll(
+            fb.TotpMultiFactorGenerator.assertionForEnrollment(pendingTotpSecret, code.trim()),
+            'TOTP'
+          );
         pendingTotpSecret = null;
         set((state) => {
           if (state.user) {
@@ -374,7 +392,8 @@ export const useAuthStore = create<AuthStore>()(
         }
         const current = ensureAuth().currentUser;
         if (!current) throw new Error('You must be signed in.');
-        const mfaUser = multiFactor(current);
+        const fb = await loadFirebaseAuth();
+        const mfaUser = fb.multiFactor(current);
         const factor = mfaUser.enrolledFactors[0];
         if (!factor) throw new Error('No enrolled second factor to disable.');
         await mfaUser.unenroll(factor.uid);
@@ -467,17 +486,19 @@ export const useAuthStore = create<AuthStore>()(
       signUp: async (email: string, password: string, displayName: string) => {
         try {
           set({ isLoading: true });
+          await ensureAuthResolved();
           if (!auth && mockApiEnabled) {
             const user = await demoRegister(email, displayName);
             set({ user, isAuthenticated: true, isAdmin: false, isLoading: false });
             return;
           }
-          const result = await createUserWithEmailAndPassword(ensureAuth(), email, password);
+          const fb = await loadFirebaseAuth();
+          const result = await fb.createUserWithEmailAndPassword(ensureAuth(), email, password);
 
           // Update display name
-          await updateProfile(result.user, { displayName });
+          await fb.updateProfile(result.user, { displayName });
 
-          const user = convertFirebaseUser(result.user);
+          const user = convertFirebaseUser(result.user, fb);
           user.displayName = displayName;
 
           // Save to backend
@@ -488,7 +509,7 @@ export const useAuthStore = create<AuthStore>()(
           // Kick off the verification email without blocking registration.
           try {
             if (result.user.emailVerified === false) {
-              await firebaseSendEmailVerification(result.user);
+              await fb.sendEmailVerification(result.user);
             }
           } catch (error) {
             console.error('Could not send verification email:', error);
@@ -502,13 +523,21 @@ export const useAuthStore = create<AuthStore>()(
       signInWithGoogle: async () => {
         try {
           set({ isLoading: true });
+          await ensureAuthResolved();
           if (!auth && mockApiEnabled) {
             const user = await demoGoogleSignIn();
-            set({ user, isAuthenticated: true, isAdmin: user.role === 'admin', isLoading: false, pendingMfa: null });
+            set({
+              user,
+              isAuthenticated: true,
+              isAdmin: user.role === 'admin',
+              isLoading: false,
+              pendingMfa: null,
+            });
             return;
           }
-          const result = await signInWithPopup(ensureAuth(), googleProvider);
-          const user = convertFirebaseUser(result.user);
+          const fb = await loadFirebaseAuth();
+          const result = await fb.signInWithPopup(ensureAuth(), new fb.GoogleAuthProvider());
+          const user = convertFirebaseUser(result.user, fb);
 
           // Save to backend
           await saveUserToBackend(user, 'PUT');
@@ -518,10 +547,8 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error) {
           if (isMfaRequiredError(error) && auth) {
             try {
-              pendingMfaResolver = getMultiFactorResolver(
-                auth,
-                error as Parameters<typeof getMultiFactorResolver>[1]
-              );
+              const fb = await loadFirebaseAuth();
+              pendingMfaResolver = fb.getMultiFactorResolver(auth, error as MultiFactorError);
               set({ isLoading: false, pendingMfa: { email: '', mode: 'totp' } });
               return;
             } catch {
@@ -537,6 +564,7 @@ export const useAuthStore = create<AuthStore>()(
         pendingMfaResolver = null;
         pendingTotpSecret = null;
         try {
+          await ensureAuthResolved();
           if (!auth) {
             // Demo mode has no Firebase session — clear the demo session and state.
             clearDemoSession();
@@ -550,7 +578,8 @@ export const useAuthStore = create<AuthStore>()(
             return;
           }
           set({ isLoading: true });
-          await firebaseSignOut(ensureAuth());
+          const fb = await loadFirebaseAuth();
+          await fb.signOut(ensureAuth());
           set({
             user: null,
             isAuthenticated: false,
@@ -565,6 +594,7 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       resetPassword: async (email: string) => {
+        await ensureAuthResolved();
         if (!auth && mockApiEnabled) {
           // Demo mode has no real email provider. Simulate the round trip and
           // succeed silently for any address (standard anti-enumeration).
@@ -573,10 +603,12 @@ export const useAuthStore = create<AuthStore>()(
           });
           return;
         }
-        await sendPasswordResetEmail(ensureAuth(), email.trim());
+        const fb = await loadFirebaseAuth();
+        await fb.sendPasswordResetEmail(ensureAuth(), email.trim());
       },
 
       sendEmailVerification: async () => {
+        await ensureAuthResolved();
         if (!auth && mockApiEnabled) {
           // Demo accounts are considered verified (no email infra).
           return;
@@ -586,12 +618,14 @@ export const useAuthStore = create<AuthStore>()(
           throw new Error('You must be signed in to verify your email.');
         }
         if (current.emailVerified) return;
-        await firebaseSendEmailVerification(current);
+        const fb = await loadFirebaseAuth();
+        await fb.sendEmailVerification(current);
       },
 
       refreshAuthState: async () => {
         // Re-read the Firebase account after the user clicks the verification
         // link — onAuthStateChanged does not fire for an in-place reload().
+        await ensureAuthResolved();
         const current = auth?.currentUser;
         if (!current) return;
         try {

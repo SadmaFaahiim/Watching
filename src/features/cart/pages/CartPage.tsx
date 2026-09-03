@@ -63,6 +63,7 @@ const CartPage = () => {
                   <Box
                     component={RouterLink}
                     to={`/products/${item.productId}`}
+                    aria-label={`View ${item.product.name}`}
                     sx={{
                       width: 84,
                       height: 84,
@@ -166,7 +167,7 @@ const CartPage = () => {
         {/* Summary */}
         <Grid item xs={12} md={4}>
           <Paper variant="outlined" sx={{ p: 3, position: 'sticky', top: 96 }}>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+            <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
               Order Summary
             </Typography>
             <Stack spacing={1.25}>
@@ -187,10 +188,11 @@ const CartPage = () => {
             </Stack>
             <Divider sx={{ my: 2 }} />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="h6" fontWeight={700}>
+              {/* Summary totals are data labels, not document headings. */}
+              <Typography component="div" variant="h6" fontWeight={700}>
                 Total
               </Typography>
-              <Typography variant="h6" fontWeight={800} color="primary.main">
+              <Typography component="div" variant="h6" fontWeight={800} color="primary.main">
                 {formatCurrency(total)}
               </Typography>
             </Box>

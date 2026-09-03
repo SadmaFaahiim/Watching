@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Demo mode: no Firebase auth instance, mock API enabled — every 2FA path
 // below exercises the in-memory directory + seed database.
 vi.mock('@/lib/firebase', () => ({
+  initializeFirebase: async () => undefined,
   getFirebaseAuth: () => undefined,
 }));
 
@@ -90,9 +91,7 @@ describe('auth store — two-factor authentication (demo path)', () => {
     await useAuthStore.getState().signOut();
     await useAuthStore.getState().signIn('demo@classicwatch.local', 'password123');
 
-    await expect(useAuthStore.getState().verifyMfaChallenge('12')).rejects.toThrow(
-      '6-digit code'
-    );
+    await expect(useAuthStore.getState().verifyMfaChallenge('12')).rejects.toThrow('6-digit code');
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
   });
 

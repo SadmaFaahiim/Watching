@@ -5,11 +5,12 @@ const hasFirebaseCredentials = Boolean(
 );
 
 // Demo mode: serve the whole storefront from an in-memory mock API.
-// Enabled explicitly via VITE_ENABLE_MOCK_API=true, or automatically in
-// development when no Firebase credentials are configured yet.
+// Enabled explicitly via VITE_ENABLE_MOCK_API=true, or automatically whenever
+// no Firebase credentials are configured — in development AND in production
+// builds, so a deployed demo is fully self-contained instead of pointing at a
+// dead backend. Configuring real Firebase credentials flips it off.
 export const mockApiEnabled =
-  import.meta.env.VITE_ENABLE_MOCK_API === 'true' ||
-  (import.meta.env.DEV && !hasFirebaseCredentials);
+  import.meta.env.VITE_ENABLE_MOCK_API === 'true' || !hasFirebaseCredentials;
 
 export const demoUserId = 'demo-user';
 

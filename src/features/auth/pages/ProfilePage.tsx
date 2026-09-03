@@ -123,7 +123,8 @@ const ProfilePage = () => {
             </Avatar>
             <Box sx={{ flexGrow: 1, minWidth: 200 }}>
               <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="h6" fontWeight={700}>
+                {/* Profile identity is data, not a document heading. */}
+                <Typography variant="h6" component="div" fontWeight={700}>
                   {user.displayName || 'User'}
                 </Typography>
                 <Chip
@@ -152,7 +153,7 @@ const ProfilePage = () => {
 
         {/* Details */}
         <Paper variant="outlined" sx={{ p: 3 }}>
-          <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+          <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
             Account details
           </Typography>
           <Stack spacing={1.5}>
@@ -179,7 +180,7 @@ const ProfilePage = () => {
         <Paper variant="outlined" sx={{ p: 3 }}>
           <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }}>
             <ShieldOutlined color="primary" />
-            <Typography variant="h6" fontWeight={700}>
+            <Typography variant="h6" component="h2" fontWeight={700}>
               Security
             </Typography>
           </Stack>
@@ -293,7 +294,12 @@ const ProfilePage = () => {
                 : 'Add a second factor so your account stays safe even if your password leaks.'}
             </Typography>
             {user.mfaEnabled === true ? (
-              <Button variant="outlined" size="small" color="error" onClick={() => void handleDisableMfa()}>
+              <Button
+                variant="outlined"
+                size="small"
+                color="error"
+                onClick={() => void handleDisableMfa()}
+              >
                 Disable two-factor authentication
               </Button>
             ) : (
@@ -372,7 +378,11 @@ const ProfilePage = () => {
                           <IconButton
                             size="small"
                             aria-label={`Remove passkey ${record.name}`}
-                            onClick={() => void removePasskey(record.id).then(() => setPasskeyNotice('Passkey removed.'))}
+                            onClick={() =>
+                              void removePasskey(record.id).then(() =>
+                                setPasskeyNotice('Passkey removed.')
+                              )
+                            }
                           >
                             <DeleteOutline fontSize="small" />
                           </IconButton>

@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './styles/global.css';
+// Note: global styles are inlined in index.html (critical CSS) so first
+// paint never waits on a stylesheet request.
 import { initializeFirebase } from './lib/firebase';
 
 // Initialize Firebase

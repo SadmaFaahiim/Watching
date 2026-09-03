@@ -146,7 +146,8 @@ const ProductsPage = () => {
               {getApiErrorMessage(error, 'Failed to load products. Please try again.')}
             </Alert>
           ) : isLoading ? (
-            <SkeletonLoader count={8} />
+            /* Match the real page size so the skeleton→grid swap shifts nothing. */
+            <SkeletonLoader count={PRODUCTS_PAGE_SIZE} />
           ) : products.length === 0 ? (
             <EmptyState
               title={isSearching ? `No results for "${query}"` : 'No products found'}

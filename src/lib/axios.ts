@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import config from '@/config';
-import { getFirebaseAuth } from '@/lib/firebase';
+import { getFirebaseAuth, initializeFirebase } from '@/lib/firebase';
 import { mockApiAdapter } from '@/mocks/adapter';
 
 // Create axios instance
@@ -36,6 +36,9 @@ export const getApiErrorMessage = (error: unknown, fallback = 'Something went wr
 api.interceptors.request.use(
   async (requestConfig: InternalAxiosRequestConfig) => {
     try {
+      // Ensure Firebase init has settled before reading the current user
+      // (init is lazy now — resolves instantly when unconfigured).
+      await initializeFirebase();
       const auth = getFirebaseAuth();
       const user = auth?.currentUser;
 

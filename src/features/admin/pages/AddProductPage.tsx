@@ -256,7 +256,7 @@ const AddProductPage = () => {
             onSubmit={(event) => void handleSubmit(handleSave)(event)}
             sx={{ p: { xs: 2.5, md: 4 } }}
           >
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2.5 }}>
+            <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2.5 }}>
               Basics
             </Typography>
             <Grid container spacing={2}>
@@ -343,7 +343,7 @@ const AddProductPage = () => {
             </Grid>
 
             <Divider sx={{ my: 3.5 }} />
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2.5 }}>
+            <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2.5 }}>
               Pricing & inventory
             </Typography>
             <Grid container spacing={2}>
@@ -386,7 +386,7 @@ const AddProductPage = () => {
             </Grid>
 
             <Divider sx={{ my: 3.5 }} />
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2.5 }}>
+            <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2.5 }}>
               Specifications
             </Typography>
             <Grid container spacing={2}>
@@ -488,7 +488,7 @@ const AddProductPage = () => {
         {/* Side panel: image + flags */}
         <Grid item xs={12} lg={4}>
           <Paper variant="outlined" sx={{ p: { xs: 2.5, md: 3 }, position: 'sticky', top: 96 }}>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+            <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
               Media & flags
             </Typography>
 

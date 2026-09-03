@@ -122,6 +122,9 @@ const ManageOrdersPage = () => {
                 key={order.id}
                 disableGutters
                 elevation={0}
+                // Accordion summaries default to <h3> — under the page h1 that
+                // skips a level, so render them as h2 section titles.
+                slotProps={{ heading: { component: 'h2' } }}
                 sx={{
                   border: '1px solid',
                   borderColor: 'divider',

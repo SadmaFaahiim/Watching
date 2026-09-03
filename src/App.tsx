@@ -20,8 +20,11 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 // Pages - Lazy loaded for code splitting
 import { lazy, Suspense } from 'react';
 
-const Home = lazy(() => import('@/features/home/pages/HomePage'));
-const Products = lazy(() => import('@/features/products/pages/ProductsPage'));
+// Home and the products catalog are the two landing routes Lighthouse and
+// users hit first — they are tiny (5-7 KB) and eager-loading them removes the
+// Suspense gap so the page paints immediately after the shell.
+import Home from '@/features/home/pages/HomePage';
+import Products from '@/features/products/pages/ProductsPage';
 const ProductDetail = lazy(() => import('@/features/products/pages/ProductDetailPage'));
 const Cart = lazy(() => import('@/features/cart/pages/CartPage'));
 const Checkout = lazy(() => import('@/features/cart/pages/CheckoutPage'));

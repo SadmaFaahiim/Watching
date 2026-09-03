@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/firebase', () => ({
+  initializeFirebase: async () => undefined,
   getFirebaseAuth: () => undefined,
 }));
 
