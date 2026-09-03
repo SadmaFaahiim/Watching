@@ -78,7 +78,12 @@ const Footer = () => {
       <Container maxWidth="lg">
         <Grid container spacing={4} sx={{ py: 4 }}>
           <Grid item xs={12} md={4}>
-            <Typography variant="h6" fontWeight={800} sx={{ color: 'primary.main', mb: 1 }}>
+            <Typography
+              variant="h6"
+              component="div"
+              fontWeight={800}
+              sx={{ color: 'primary.main', mb: 1 }}
+            >
               Classic Watch Pro
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 320 }}>

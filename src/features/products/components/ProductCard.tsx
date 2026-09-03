@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { MouseEvent } from 'react';
+import type { ImgHTMLAttributes, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -22,9 +22,15 @@ import { formatCurrency, calculateDiscount } from '@/utils/helpers';
 
 interface ProductCardProps {
   product: Product;
+  /**
+   * Mark the image as high-priority (eager + fetchpriority=high). Pass this for
+   * the first row of a grid so the LCP image is fetched without waiting for
+   * layout — below-fold cards keep lazy loading.
+   */
+  priority?: boolean;
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, priority = false }: ProductCardProps) => {
   const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
   // Subscribe to changing data, not stable action/method references — with
@@ -93,7 +99,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <img
               src={product.thumbnail}
               alt={product.name}
-              loading="lazy"
+              loading={priority ? 'eager' : 'lazy'}
+              // React 18.3's runtime does not recognize the camelCase
+              // fetchPriority prop (and its types reject lowercase) — the
+              // typed spread passes the real fetchpriority attribute through.
+              {...(priority
+                ? ({ fetchpriority: 'high' } as ImgHTMLAttributes<HTMLImageElement>)
+                : {})}
               decoding="async"
               onError={() => setImageFailed(true)}
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
@@ -188,12 +200,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
         >
           {product.brand}
         </Typography>
+        {/* Card content is not a page heading — keep the name out of the
+            heading outline (MUI maps subtitle1 to <h6> by default). */}
         <Typography
           variant="subtitle1"
+          component="div"
           fontWeight={600}
           lineHeight={1.3}
           className="line-clamp-2"
           title={product.name}
+          // Reserve two lines even for short names — cards in a row stay
+          // equal height and the skeleton swap causes no layout shift.
+          sx={{ minHeight: '2.6em' }}
         >
           {product.name}
         </Typography>

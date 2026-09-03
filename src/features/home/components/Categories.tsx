@@ -35,7 +35,8 @@ const Categories = () => {
                     justifyContent: 'space-between',
                   }}
                 >
-                  <Typography variant="h6" fontWeight={700}>
+                  {/* Card content heading — h3 under the section's h2 (axe heading-order). */}
+                  <Typography variant="h6" component="h3" fontWeight={700}>
                     {category.label}
                   </Typography>
                   <Box>

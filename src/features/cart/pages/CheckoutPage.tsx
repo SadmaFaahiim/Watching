@@ -316,8 +316,13 @@ const CheckoutPage = () => {
                       control={control}
                       render={({ field }) => (
                         <FormControl fullWidth error={Boolean(errors.country)}>
-                          <InputLabel>Country</InputLabel>
-                          <Select {...field} label="Country">
+                          <InputLabel id="checkout-country-label">Country</InputLabel>
+                          <Select
+                            {...field}
+                            label="Country"
+                            id="checkout-country"
+                            labelId="checkout-country-label"
+                          >
                             {COUNTRIES.map((country) => (
                               <MenuItem key={country} value={country}>
                                 {country}

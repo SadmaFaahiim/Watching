@@ -3,37 +3,52 @@ import { createTheme, Theme, ThemeOptions } from '@mui/material/styles';
 const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
   palette: {
     mode,
-    primary: {
-      main: '#3867D6',
-      light: '#5F85DB',
-      dark: '#2849A5',
-      contrastText: '#ffffff',
-    },
+    // Deep royal blue reads as the brand accent on light surfaces, but as text
+    // on the dark surfaces it fails WCAG AA (≈3.5:1). Dark mode therefore uses
+    // a lighter periwinkle primary for text/links/outlines while contained
+    // buttons keep the deep-blue gradient via the MuiButton override below.
+    primary:
+      mode === 'light'
+        ? {
+            main: '#3867D6',
+            light: '#5F85DB',
+            dark: '#2849A5',
+            contrastText: '#ffffff',
+          }
+        : {
+            main: '#8FAEFF',
+            light: '#A7C0FF',
+            dark: '#3867D6',
+            contrastText: '#0B1220',
+          },
     secondary: {
-      main: '#F39C12',
+      main: mode === 'light' ? '#F39C12' : '#F5B041',
       light: '#F5B041',
-      dark: '#C87F0A',
-      contrastText: '#ffffff',
+      dark: mode === 'light' ? '#C87F0A' : '#F39C12',
+      contrastText: mode === 'light' ? '#ffffff' : '#3B2A00',
     },
+    // Semantic colors follow the same rule as primary: in dark mode the
+    // "main" shade lifts so colored text/chips clear WCAG AA against navy
+    // surfaces (MUI auto-selects dark contrast text on the lighter fills).
     error: {
-      main: '#EF4444',
-      light: '#F87171',
-      dark: '#DC2626',
+      main: mode === 'light' ? '#EF4444' : '#F87171',
+      light: mode === 'light' ? '#F87171' : '#FCA5A5',
+      dark: mode === 'light' ? '#DC2626' : '#EF4444',
     },
     warning: {
-      main: '#F59E0B',
-      light: '#FCD34D',
-      dark: '#D97706',
+      main: mode === 'light' ? '#F59E0B' : '#FBBF24',
+      light: mode === 'light' ? '#FCD34D' : '#FDE68A',
+      dark: mode === 'light' ? '#D97706' : '#F59E0B',
     },
     success: {
-      main: '#10B981',
-      light: '#34D399',
-      dark: '#059669',
+      main: mode === 'light' ? '#10B981' : '#34D399',
+      light: mode === 'light' ? '#34D399' : '#6EE7B7',
+      dark: mode === 'light' ? '#059669' : '#10B981',
     },
     info: {
-      main: '#3B82F6',
-      light: '#60A5FA',
-      dark: '#2563EB',
+      main: mode === 'light' ? '#3B82F6' : '#60A5FA',
+      light: mode === 'light' ? '#60A5FA' : '#93C5FD',
+      dark: mode === 'light' ? '#2563EB' : '#3B82F6',
     },
     ...(mode === 'light'
       ? {
@@ -53,7 +68,9 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
           },
           text: {
             primary: '#F1F5F9',
-            secondary: '#94A3B8',
+            // Slightly lighter than slate-400 so muted text clears WCAG AA
+            // (4.5:1) even on hover surfaces (#303A4B) — #94A3B8 sits at 4.46:1.
+            secondary: '#9DB0C4',
           },
         }),
   },
@@ -125,6 +142,31 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
     '0px 92px 184px rgba(0,0,0,0.52)',
   ],
   components: {
+    MuiTypography: {
+      defaultProps: {
+        // MUI maps subtitle1/subtitle2 to <h6> by default, which sprinkles
+        // phantom headings through every page (product prices, filter group
+        // labels…). Those are labels/values, not document headings — map them
+        // to <div> so the heading outline stays truthful for screen readers
+        // and axe's heading-order rule.
+        variantMapping: {
+          h1: 'h1',
+          h2: 'h2',
+          h3: 'h3',
+          h4: 'h4',
+          h5: 'h5',
+          h6: 'h6',
+          subtitle1: 'div',
+          subtitle2: 'div',
+          body1: 'p',
+          body2: 'p',
+          caption: 'span',
+          overline: 'span',
+          button: 'span',
+          inherit: 'p',
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
@@ -150,15 +192,13 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         root: {
           borderRadius: 16,
-          boxShadow: mode === 'light' 
-            ? '0px 4px 12px rgba(0,0,0,0.08)' 
-            : '0px 4px 12px rgba(0,0,0,0.3)',
+          boxShadow:
+            mode === 'light' ? '0px 4px 12px rgba(0,0,0,0.08)' : '0px 4px 12px rgba(0,0,0,0.3)',
           transition: 'all 0.3s ease-in-out',
           '&:hover': {
             transform: 'translateY(-4px)',
-            boxShadow: mode === 'light'
-              ? '0px 8px 24px rgba(0,0,0,0.12)'
-              : '0px 8px 24px rgba(0,0,0,0.4)',
+            boxShadow:
+              mode === 'light' ? '0px 8px 24px rgba(0,0,0,0.12)' : '0px 8px 24px rgba(0,0,0,0.4)',
           },
         },
       },
@@ -183,9 +223,8 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          boxShadow: mode === 'light'
-            ? '0px 2px 8px rgba(0,0,0,0.08)'
-            : '0px 2px 8px rgba(0,0,0,0.3)',
+          boxShadow:
+            mode === 'light' ? '0px 2px 8px rgba(0,0,0,0.08)' : '0px 2px 8px rgba(0,0,0,0.3)',
         },
       },
     },

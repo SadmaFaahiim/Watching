@@ -179,20 +179,24 @@ const Header = () => {
         }}
       >
         <Toolbar sx={{ gap: 1.5 }}>
-          {/* Brand */}
-          <Typography
-            variant="h6"
-            component={RouterLink}
-            to="/"
-            sx={{
-              fontWeight: 800,
-              letterSpacing: '-0.02em',
-              color: 'primary.main',
-              textDecoration: 'none',
-              flexShrink: 0,
-            }}
-          >
-            Classic Watch Pro
+          {/* Brand — a logo/link, not a document heading (keeps axe's
+              heading-order rule happy when rendered after <h1> in a drawer
+              portal). */}
+          <Typography variant="h6" component="span" sx={{ display: 'inline-flex' }}>
+            <Box
+              component={RouterLink}
+              to="/"
+              aria-label="Classic Watch Pro home"
+              sx={{
+                fontWeight: 800,
+                letterSpacing: '-0.02em',
+                color: 'primary.main',
+                textDecoration: 'none',
+                display: 'inline-flex',
+              }}
+            >
+              Classic Watch Pro
+            </Box>
           </Typography>
 
           {/* Desktop navigation */}

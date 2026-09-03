@@ -71,7 +71,7 @@ const ProductFilters = ({ value, onChange, onClear }: ProductFiltersProps) => {
   return (
     <Box component="form" onSubmit={(event) => event.preventDefault()}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-        <Typography variant="h6" fontWeight={700}>
+        <Typography variant="h6" component="h2" fontWeight={700}>
           Filters
         </Typography>
         {activeFilterCount > 0 && (

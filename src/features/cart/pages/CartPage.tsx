@@ -25,6 +25,9 @@ const CartPage = () => {
   if (items.length === 0) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
+        <Typography variant="h4" component="h1" fontWeight={700} sx={{ mb: 3 }}>
+          Shopping Cart
+        </Typography>
         <EmptyState
           title="Your cart is empty"
           message="Browse the collection and add a timepiece you love — your cart is waiting."

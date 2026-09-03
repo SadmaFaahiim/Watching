@@ -43,8 +43,14 @@ const productSchema = z.object({
   category: z.enum(CATEGORY_VALUES),
   description: z.string().min(20, 'Describe the piece in at least 20 characters').max(2000),
   price: z.coerce.number().positive('Price must be greater than 0').max(10_000_000),
-  originalPrice: z.union([z.coerce.number().nonnegative().max(10_000_000), z.literal(0)]).optional(),
-  stock: z.coerce.number().int('Use a whole number').min(0, 'Stock cannot be negative').max(100_000),
+  originalPrice: z
+    .union([z.coerce.number().nonnegative().max(10_000_000), z.literal(0)])
+    .optional(),
+  stock: z.coerce
+    .number()
+    .int('Use a whole number')
+    .min(0, 'Stock cannot be negative')
+    .max(100_000),
   rating: z.coerce.number().min(0).max(5).optional(),
   reviewCount: z.coerce.number().int().min(0).optional(),
   thumbnail: z.string().url('Enter a valid image URL (https://…)').or(z.literal('')).optional(),
@@ -187,7 +193,9 @@ const AddProductPage = () => {
       }
       navigate('/admin/products');
     } catch (error) {
-      toast.error(getApiErrorMessage(error, isEdit ? 'Failed to update product' : 'Failed to create product'));
+      toast.error(
+        getApiErrorMessage(error, isEdit ? 'Failed to update product' : 'Failed to create product')
+      );
     }
   };
 
@@ -228,9 +236,7 @@ const AddProductPage = () => {
         >
           Products
         </Typography>
-        <Typography color="text.primary">
-          {isEdit ? 'Edit product' : 'Add product'}
-        </Typography>
+        <Typography color="text.primary">{isEdit ? 'Edit product' : 'Add product'}</Typography>
       </Breadcrumbs>
       <Typography variant="h4" component="h1" fontWeight={700} sx={{ mb: 0.5 }}>
         {isEdit ? 'Edit product' : 'Add a new product'}
@@ -290,8 +296,13 @@ const AddProductPage = () => {
                   control={control}
                   render={({ field }) => (
                     <FormControl fullWidth error={Boolean(errors.category)}>
-                      <InputLabel>Category</InputLabel>
-                      <Select {...field} label="Category">
+                      <InputLabel id="product-category-label">Category</InputLabel>
+                      <Select
+                        {...field}
+                        label="Category"
+                        id="product-category"
+                        labelId="product-category-label"
+                      >
                         {PRODUCT_CATEGORIES.map((category) => (
                           <MenuItem key={category.value} value={category.value}>
                             {category.label}
@@ -306,7 +317,12 @@ const AddProductPage = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField label="SKU / reference (optional)" fullWidth disabled helperText="Assigned automatically" />
+                <TextField
+                  label="SKU / reference (optional)"
+                  fullWidth
+                  disabled
+                  helperText="Assigned automatically"
+                />
               </Grid>
               <Grid item xs={12}>
                 <TextField
@@ -336,7 +352,9 @@ const AddProductPage = () => {
                   label="Selling price"
                   type="number"
                   fullWidth
-                  InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  }}
                   {...register('price')}
                   error={Boolean(errors.price)}
                   helperText={errors.price?.message}
@@ -347,7 +365,9 @@ const AddProductPage = () => {
                   label="Original price (for discount)"
                   type="number"
                   fullWidth
-                  InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  }}
                   {...register('originalPrice')}
                   error={Boolean(errors.originalPrice)}
                   helperText={errors.originalPrice?.message ?? 'Leave blank to sell at full price'}
@@ -374,7 +394,12 @@ const AddProductPage = () => {
                 <TextField label="Movement" fullWidth {...register('movement')} />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField label="Case diameter" fullWidth placeholder="40mm" {...register('caseDiameter')} />
+                <TextField
+                  label="Case diameter"
+                  fullWidth
+                  placeholder="40mm"
+                  {...register('caseDiameter')}
+                />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -421,11 +446,13 @@ const AddProductPage = () => {
                       ?.split('\n')
                       .map((feature) => feature.trim())
                       .filter(Boolean).length
-                    ? `${watched.features
-                        .split('\n')
-                        .map((feature) => feature.trim())
-                        .filter(Boolean).length} features will be shown on the product page`
-                    : 'Each line becomes a highlight chip on the product page.'
+                      ? `${
+                          watched.features
+                            .split('\n')
+                            .map((feature) => feature.trim())
+                            .filter(Boolean).length
+                        } features will be shown on the product page`
+                      : 'Each line becomes a highlight chip on the product page.'
                   }
                 />
               </Grid>
@@ -498,7 +525,9 @@ const AddProductPage = () => {
               placeholder="https://res.cloudinary.com/…/watch.jpg"
               {...register('thumbnail')}
               error={Boolean(errors.thumbnail)}
-              helperText={errors.thumbnail?.message ?? 'Paste a public image URL (Cloudinary, Unsplash…).'}
+              helperText={
+                errors.thumbnail?.message ?? 'Paste a public image URL (Cloudinary, Unsplash…).'
+              }
             />
 
             <Stack direction="row" spacing={1} sx={{ mt: 2 }}>

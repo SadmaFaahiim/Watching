@@ -39,7 +39,8 @@ describe('CartPage', () => {
     expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
     // MUI Button renders as an anchor when used with RouterLink.
     expect(screen.getByRole('link', { name: 'Explore products' })).toBeInTheDocument();
-    expect(screen.queryByText('Shopping Cart')).not.toBeInTheDocument();
+    // The empty branch must keep the page h1 (a11y: heading order).
+    expect(screen.getByRole('heading', { level: 1, name: 'Shopping Cart' })).toBeInTheDocument();
   });
 
   it('lists cart items with totals and quantity controls', async () => {

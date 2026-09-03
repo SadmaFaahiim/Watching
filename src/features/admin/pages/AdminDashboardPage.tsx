@@ -40,11 +40,7 @@ import { useProducts } from '@/api/products.api';
 import { PRODUCTS_PAGE_SIZE } from '@/features/products/constants';
 import { useAuthStore } from '@/store/auth.store';
 import { mockApiEnabled } from '@/config';
-import {
-  resetMockDb,
-  exportMockDbBackup,
-  importMockDbBackup,
-} from '@/mocks/data';
+import { resetMockDb, exportMockDbBackup, importMockDbBackup } from '@/mocks/data';
 import { getDemoUser, getDemoSessionUserId, clearDemoSession } from '@/mocks/auth';
 import { downloadTextFile, printHtml } from '@/utils/export';
 import { buildAnalyticsExport } from '@/features/admin/analyticsExport';
@@ -343,6 +339,7 @@ const AdminDashboardPage = () => {
                     <Box sx={{ minWidth: 0 }}>
                       <Typography
                         variant="h6"
+                        component="div"
                         fontWeight={800}
                         lineHeight={1.2}
                         noWrap
@@ -350,7 +347,7 @@ const AdminDashboardPage = () => {
                       >
                         {stat.value}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" component="div" color="text.secondary">
                         {stat.label}
                       </Typography>
                     </Box>
@@ -367,7 +364,7 @@ const AdminDashboardPage = () => {
             justifyContent="space-between"
             sx={{ mt: 4, mb: 2 }}
           >
-            <Typography variant="h6" fontWeight={700}>
+            <Typography variant="h6" component="h2" fontWeight={700}>
               Sales analytics
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center">
@@ -436,7 +433,7 @@ const AdminDashboardPage = () => {
                 justifyContent="space-between"
                 sx={{ mb: 2 }}
               >
-                <Typography variant="h6" fontWeight={700}>
+                <Typography variant="h6" component="h2" fontWeight={700}>
                   Recent orders
                 </Typography>
                 <Button component={RouterLink} to="/admin/orders" size="small">
@@ -495,7 +492,7 @@ const AdminDashboardPage = () => {
 
             {/* Inventory health */}
             <Grid item xs={12} lg={5}>
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+              <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
                 Inventory health
               </Typography>
               <Paper variant="outlined" sx={{ p: 2.5, mb: 2.5 }}>
@@ -539,7 +536,7 @@ const AdminDashboardPage = () => {
                 </Button>
               </Paper>
 
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+              <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
                 Most reviewed
               </Typography>
               <Paper variant="outlined" sx={{ p: 2.5 }}>

@@ -28,7 +28,9 @@ const EmptyState = ({
       }}
     >
       {icon ?? <SearchOff sx={{ fontSize: 56, color: 'text.disabled' }} />}
-      <Typography variant="h6" fontWeight={600}>
+      {/* Panel/region title — h2 keeps every embedding context (directly under
+          a page h1, or nested under a section h2) in a valid outline. */}
+      <Typography variant="h6" component="h2" fontWeight={600}>
         {title}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>

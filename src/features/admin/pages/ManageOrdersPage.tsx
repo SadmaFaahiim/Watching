@@ -72,9 +72,11 @@ const ManageOrdersPage = () => {
       </Typography>
 
       <FormControl size="small" sx={{ minWidth: 200, mb: 2.5 }}>
-        <InputLabel>Filter by status</InputLabel>
+        <InputLabel id="order-status-filter-label">Filter by status</InputLabel>
         <Select
           label="Filter by status"
+          labelId="order-status-filter-label"
+          id="order-status-filter"
           value={filter}
           onChange={(event) => setFilter(event.target.value as typeof filter)}
         >
@@ -238,9 +240,13 @@ const ManageOrdersPage = () => {
                       </Typography>
                       {canAdvance(order.orderStatus) ? (
                         <FormControl size="small" fullWidth disabled={updatePending}>
-                          <InputLabel>Update status</InputLabel>
+                          <InputLabel id={`order-status-label-${order.id}`}>
+                            Update status
+                          </InputLabel>
                           <Select
                             label="Update status"
+                            labelId={`order-status-label-${order.id}`}
+                            id={`order-status-${order.id}`}
                             value=""
                             onChange={(event) =>
                               handleStatusChange(order, event.target.value as OrderStatus)

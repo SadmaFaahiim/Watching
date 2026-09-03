@@ -62,20 +62,40 @@ const SkeletonLoader = ({ count = 6, variant = 'grid' }: SkeletonLoaderProps) =>
     <Grid container spacing={{ xs: 2, sm: 3 }} role="status" aria-label="Loading products">
       {Array.from({ length: count }, (_, index) => (
         <Grid item key={index} xs={6} sm={4} lg={3}>
+          {/* Mirror the real ProductCard block-for-block (image aspect-ratio +
+              text rows at the same heights/padding) so the skeleton-to-content
+              swap causes zero layout shift. */}
           <Box
             sx={{
-              p: 2,
+              height: '100%',
               borderRadius: 2,
               bgcolor: 'background.paper',
               border: '1px solid',
               borderColor: 'divider',
+              overflow: 'hidden',
             }}
           >
-            <Box className="skeleton" sx={{ aspectRatio: '1 / 1', borderRadius: 1.5 }} />
-            <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box className="skeleton" sx={{ width: '35%', height: 12, borderRadius: 1 }} />
-              <Box className="skeleton" sx={{ width: '75%', height: 14, borderRadius: 1 }} />
-              <Box className="skeleton" sx={{ width: '45%', height: 16, borderRadius: 1 }} />
+            <Box className="skeleton" sx={{ aspectRatio: '1 / 1' }} />
+            <Box
+              sx={{
+                p: '12px 16px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0.5,
+              }}
+            >
+              {/* brand (caption) */}
+              <Box className="skeleton" sx={{ width: '35%', height: 20, borderRadius: 1 }} />
+              {/* name — 2 lines of subtitle1 at lineHeight 1.3 */}
+              <Box className="skeleton" sx={{ width: '75%', height: 42, borderRadius: 1 }} />
+              {/* rating row */}
+              <Box className="skeleton" sx={{ width: '45%', height: 20, borderRadius: 1 }} />
+              {/* price row */}
+              <Box className="skeleton" sx={{ width: '40%', height: 28, borderRadius: 1 }} />
+              {/* flex spacer (keeps gap count identical to the card) */}
+              <Box sx={{ height: 0 }} />
+              {/* button */}
+              <Box className="skeleton" sx={{ height: 46, borderRadius: 1, mt: 1 }} />
             </Box>
           </Box>
         </Grid>

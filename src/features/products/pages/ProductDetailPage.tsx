@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ImgHTMLAttributes } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import {
   Alert,
@@ -190,6 +191,8 @@ const ProductDetailPage = () => {
               <img
                 src={images[0]}
                 alt={product.name}
+                {...({ fetchpriority: 'high' } as ImgHTMLAttributes<HTMLImageElement>)}
+                decoding="async"
                 onError={() => setImageFailed(true)}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
@@ -257,7 +260,9 @@ const ProductDetailPage = () => {
           </Stack>
 
           <Stack direction="row" alignItems="baseline" spacing={1.5} sx={{ mt: 2 }}>
-            <Typography variant="h4" fontWeight={800} color="primary.main">
+            {/* Price is content, not a heading — avoid a phantom <h4> under the
+                product <h1> (axe heading-order). */}
+            <Typography variant="h4" component="div" fontWeight={800} color="primary.main">
               {formatCurrency(product.price)}
             </Typography>
             {product.originalPrice && product.originalPrice > product.price && (

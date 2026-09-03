@@ -169,7 +169,7 @@ const ProductsPage = () => {
             />
           ) : (
             <>
-              <ProductGrid products={products} />
+              <ProductGrid products={products} priorityCount={4} />
               {!isSearching && totalPages > 1 && (
                 <Stack alignItems="center" sx={{ mt: 4 }}>
                   <Pagination
