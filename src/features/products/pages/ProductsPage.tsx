@@ -12,15 +12,18 @@ import {
   Typography,
 } from '@mui/material';
 import { Tune } from '@mui/icons-material';
+import { lazy, Suspense } from 'react';
 import { useProducts, useSearchProducts } from '@/api/products.api';
 import { getApiErrorMessage } from '@/lib/axios';
 import { PRODUCTS_PAGE_SIZE } from '@/features/products/constants';
 import { useProductFilters } from '@/features/products/hooks/useProductFilters';
 import ProductGrid from '@/features/products/components/ProductGrid';
-import ProductFilters from '@/features/products/components/ProductFilters';
 import ProductSort from '@/features/products/components/ProductSort';
 import SkeletonLoader from '@/components/common/SkeletonLoader';
 import EmptyState from '@/components/common/EmptyState';
+import LoadingScreen from '@/components/common/LoadingScreen';
+
+const ProductFilters = lazy(() => import('@/features/products/components/ProductFilters'));
 
 const ProductsPage = () => {
   const navigate = useNavigate();
@@ -198,17 +201,19 @@ const ProductsPage = () => {
         onClose={() => setMobileFiltersOpen(false)}
         PaperProps={{ sx: { width: 320, maxWidth: '92vw' } }}
       >
-        <Box sx={{ p: 2.5 }}>
-          {filtersPanel}
-          <Button
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3 }}
-            onClick={() => setMobileFiltersOpen(false)}
-          >
-            Show results
-          </Button>
-        </Box>
+        <Suspense fallback={<LoadingScreen />}>
+          <Box sx={{ p: 2.5 }}>
+            {filtersPanel}
+            <Button
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3 }}
+              onClick={() => setMobileFiltersOpen(false)}
+            >
+              Show results
+            </Button>
+          </Box>
+        </Suspense>
       </Drawer>
     </Container>
   );

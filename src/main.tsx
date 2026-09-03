@@ -3,10 +3,6 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 // Note: global styles are inlined in index.html (critical CSS) so first
 // paint never waits on a stylesheet request.
-import { initializeFirebase } from './lib/firebase';
-
-// Initialize Firebase
-initializeFirebase();
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator && import.meta.env.PROD) {

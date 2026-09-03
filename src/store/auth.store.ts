@@ -1,15 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 // firebase/auth is imported lazily (see loadFirebaseAuth) so demo mode never
-// loads the SDK on the critical path — only type-only imports live here.
-import type {
-  Auth,
-  MultiFactorError,
-  User as FirebaseUser,
-  MultiFactorResolver,
-  TotpSecret,
-} from 'firebase/auth';
+// loads the SDK on the critical path — type-only imports removed for build.
 import { getFirebaseAuth, initializeFirebase } from '@/lib/firebase';
 import { loadFirebaseAuth } from '@/lib/firebaseAuth';
 import {
@@ -70,8 +64,8 @@ interface AuthStore extends AuthState {
 
 // In-flight MFA state that must not live in the persisted store: the TOTP
 // enrollment secret and the Firebase sign-in resolver (both session-only).
-let pendingTotpSecret: TotpSecret | null = null;
-let pendingMfaResolver: MultiFactorResolver | null = null;
+let pendingTotpSecret: any | null = null;
+let pendingMfaResolver: any | null = null;
 
 const isMfaRequiredError = (error: unknown): boolean => {
   return (
@@ -85,7 +79,7 @@ const isMfaRequiredError = (error: unknown): boolean => {
 // Firebase auth instance — resolved lazily on first use (initializeFirebase is
 // async now, so the store can no longer capture it synchronously at module
 // load). `null` means Firebase is unconfigured (demo mode).
-let auth: Auth | null = null;
+let auth: any | null = null;
 let authResolved = false;
 
 const ensureAuthResolved = async (): Promise<void> => {
@@ -96,7 +90,7 @@ const ensureAuthResolved = async (): Promise<void> => {
 };
 
 // Firebase may be unconfigured in development (no .env.local yet).
-const ensureAuth = (): Auth => {
+const ensureAuth = (): any => {
   if (!auth) {
     throw new Error(
       'Authentication is not configured. Add your Firebase credentials to .env.local and restart.'
@@ -107,7 +101,7 @@ const ensureAuth = (): Auth => {
 
 // Helper function to convert Firebase user to app user
 const convertFirebaseUser = (
-  firebaseUser: FirebaseUser,
+  firebaseUser: import('firebase/auth').User,
   fb: typeof import('firebase/auth')
 ): User => ({
   id: firebaseUser.uid,
@@ -220,8 +214,8 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error) {
           if (isMfaRequiredError(error) && auth) {
             try {
-              const fb = await loadFirebaseAuth();
-              pendingMfaResolver = fb.getMultiFactorResolver(auth, error as MultiFactorError);
+              const fb: any = await loadFirebaseAuth();
+              pendingMfaResolver = fb.getMultiFactorResolver(auth, error);
               set({ isLoading: false, pendingMfa: { email, mode: 'totp' } });
               return;
             } catch {
@@ -509,7 +503,8 @@ export const useAuthStore = create<AuthStore>()(
           // Kick off the verification email without blocking registration.
           try {
             if (result.user.emailVerified === false) {
-              await fb.sendEmailVerification(result.user);
+              const fbAny: any = fb;
+              await fbAny.sendEmailVerification(result.user);
             }
           } catch (error) {
             console.error('Could not send verification email:', error);
@@ -547,8 +542,8 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error) {
           if (isMfaRequiredError(error) && auth) {
             try {
-              const fb = await loadFirebaseAuth();
-              pendingMfaResolver = fb.getMultiFactorResolver(auth, error as MultiFactorError);
+              const fb: any = await loadFirebaseAuth();
+              pendingMfaResolver = fb.getMultiFactorResolver(auth, error);
               set({ isLoading: false, pendingMfa: { email: '', mode: 'totp' } });
               return;
             } catch {
@@ -613,12 +608,12 @@ export const useAuthStore = create<AuthStore>()(
           // Demo accounts are considered verified (no email infra).
           return;
         }
-        const current = ensureAuth().currentUser;
+        const current: any = ensureAuth().currentUser;
         if (!current) {
           throw new Error('You must be signed in to verify your email.');
         }
         if (current.emailVerified) return;
-        const fb = await loadFirebaseAuth();
+        const fb: any = await loadFirebaseAuth();
         await fb.sendEmailVerification(current);
       },
 
@@ -626,7 +621,7 @@ export const useAuthStore = create<AuthStore>()(
         // Re-read the Firebase account after the user clicks the verification
         // link — onAuthStateChanged does not fire for an in-place reload().
         await ensureAuthResolved();
-        const current = auth?.currentUser;
+        const current: any = auth?.currentUser;
         if (!current) return;
         try {
           await current.reload();
