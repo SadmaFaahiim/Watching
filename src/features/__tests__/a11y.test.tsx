@@ -37,6 +37,7 @@ import AdminDashboardPage from '@/features/admin/pages/AdminDashboardPage';
 import ManageProductsPage from '@/features/admin/pages/ManageProductsPage';
 import ManageOrdersPage from '@/features/admin/pages/ManageOrdersPage';
 import ManageUsersPage from '@/features/admin/pages/ManageUsersPage';
+import ManageReviewsPage from '@/features/admin/pages/ManageReviewsPage';
 import AddProductPage from '@/features/admin/pages/AddProductPage';
 
 import { useAuthStore } from '@/store/auth.store';
@@ -124,6 +125,7 @@ const AppRoutes = () => (
       <Route path="/admin/products/add" element={<AddProductPage />} />
       <Route path="/admin/orders" element={<ManageOrdersPage />} />
       <Route path="/admin/users" element={<ManageUsersPage />} />
+      <Route path="/admin/reviews" element={<ManageReviewsPage />} />
     </Route>
   </Routes>
 );
@@ -317,4 +319,12 @@ describe('accessibility regression tests (axe-core, WCAG A/AA)', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
     await expectNoA11yViolations();
   });
+
+  it('admin reviews', async () => {
+    renderPage('/admin/reviews', 'admin');
+    await waitForContent();
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    await expectNoA11yViolations();
+  }, // 5s default on this page. // The whole review corpus renders in one table — axe needs more than the
+  20_000);
 });

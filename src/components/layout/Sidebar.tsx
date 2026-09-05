@@ -22,6 +22,7 @@ import {
   Inventory2Outlined,
   ListAltOutlined,
   PeopleAltOutlined,
+  RateReviewOutlined,
   Logout,
 } from '@mui/icons-material';
 import { useAuthStore } from '@/store/auth.store';
@@ -61,6 +62,7 @@ const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
         { label: 'Products', to: '/admin/products', icon: Inventory2Outlined },
         { label: 'Orders', to: '/admin/orders', icon: ListAltOutlined },
         { label: 'Users', to: '/admin/users', icon: PeopleAltOutlined },
+        { label: 'Reviews', to: '/admin/reviews', icon: RateReviewOutlined },
       ],
     });
   }

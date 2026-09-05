@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ImgHTMLAttributes } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -36,8 +36,10 @@ import { useProduct, useFeaturedProducts } from '@/api/products.api';
 import { getApiErrorMessage } from '@/lib/axios';
 import { useCartStore } from '@/store/cart.store';
 import { useWishlistStore } from '@/store/wishlist.store';
+import { useRecentlyViewedStore } from '@/store/recentlyViewed.store';
 import { formatCurrency, calculateDiscount } from '@/utils/helpers';
 import ProductGrid from '@/features/products/components/ProductGrid';
+import ReviewsSection from '@/features/products/components/ReviewsSection';
 import SkeletonLoader from '@/components/common/SkeletonLoader';
 
 const DetailSkeleton = () => (
@@ -73,12 +75,19 @@ const ProductDetailPage = () => {
   const wishlistItems = useWishlistStore((state) => state.items);
   const addToWishlist = useWishlistStore((state) => state.addToWishlist);
   const removeFromWishlist = useWishlistStore((state) => state.removeFromWishlist);
+  const recordRecentView = useRecentlyViewedStore((state) => state.record);
 
   const [quantity, setQuantity] = useState(1);
   const [imageFailed, setImageFailed] = useState(false);
 
   const { data: product, isLoading, isError, error, refetch } = useProduct(id ?? '');
   const featuredQuery = useFeaturedProducts(8);
+
+  // Track the visit for the “Recently viewed” rail (after hooks, before the
+  // loading early-return — the effect only records when a product is loaded).
+  useEffect(() => {
+    if (product) recordRecentView(product);
+  }, [product, recordRecentView]);
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -204,7 +213,7 @@ const ProductDetailPage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'linear-gradient(135deg, #3867D6 0%, #2849A5 100%)',
+                  background: 'linear-gradient(135deg, #24447C 0%, #18315A 100%)',
                 }}
               >
                 <Watch sx={{ fontSize: 120, color: 'rgba(255,255,255,0.85)' }} />
@@ -397,6 +406,9 @@ const ProductDetailPage = () => {
           </TableBody>
         </Table>
       </Paper>
+
+      {/* Customer reviews */}
+      <ReviewsSection product={product} />
 
       {/* Related */}
       {related.length > 0 && (

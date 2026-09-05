@@ -13,11 +13,20 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { Favorite, FavoriteBorder, Star, Watch } from '@mui/icons-material';
+import {
+  CompareArrows,
+  Favorite,
+  FavoriteBorder,
+  Star,
+  VisibilityOutlined,
+  Watch,
+} from '@mui/icons-material';
 import toast from 'react-hot-toast';
 import type { Product } from '@/types';
 import { useCartStore } from '@/store/cart.store';
 import { useWishlistStore } from '@/store/wishlist.store';
+import { useCompareStore } from '@/store/compare.store';
+import QuickViewDialog from '@/features/products/components/QuickViewDialog';
 import { formatCurrency, calculateDiscount } from '@/utils/helpers';
 
 interface ProductCardProps {
@@ -39,12 +48,33 @@ const ProductCard = ({ product, priority = false }: ProductCardProps) => {
   const wishlistItems = useWishlistStore((state) => state.items);
   const addToWishlist = useWishlistStore((state) => state.addToWishlist);
   const removeFromWishlist = useWishlistStore((state) => state.removeFromWishlist);
+  const compareItems = useCompareStore((state) => state.items);
+  const toggleCompare = useCompareStore((state) => state.toggle);
 
   const [imageFailed, setImageFailed] = useState(false);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   const outOfStock = product.stock <= 0;
   const wished = wishlistItems.some((item) => item.productId === product.id);
+  const inCompare = compareItems.some((item) => item.id === product.id);
   const detailPath = `/products/${product.id}`;
+
+  const handleToggleCompare = (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!inCompare && compareItems.length >= 4) {
+      toast.error('Compare holds up to 4 watches — remove one first.');
+      return;
+    }
+    toggleCompare(product);
+    if (!inCompare) toast.success(`${product.name} added to compare`);
+  };
+
+  const handleQuickView = (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setQuickViewOpen(true);
+  };
 
   const discount =
     product.originalPrice && product.originalPrice > product.price
@@ -118,7 +148,7 @@ const ProductCard = ({ product, priority = false }: ProductCardProps) => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, #3867D6 0%, #2849A5 100%)',
+                background: 'linear-gradient(135deg, #24447C 0%, #18315A 100%)',
               }}
             >
               <Watch sx={{ fontSize: 72, color: 'rgba(255,255,255,0.85)' }} />
@@ -140,7 +170,9 @@ const ProductCard = ({ product, priority = false }: ProductCardProps) => {
         <Tooltip title={wished ? 'Remove from wishlist' : 'Add to wishlist'}>
           <IconButton
             onClick={handleToggleWishlist}
-            aria-label={wished ? 'Remove from wishlist' : 'Add to wishlist'}
+            aria-label={
+              wished ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`
+            }
             size="small"
             sx={{
               position: 'absolute',
@@ -155,6 +187,44 @@ const ProductCard = ({ product, priority = false }: ProductCardProps) => {
             ) : (
               <FavoriteBorder fontSize="small" />
             )}
+          </IconButton>
+        </Tooltip>
+
+        {/* Compare */}
+        <Tooltip title={inCompare ? 'Remove from compare' : 'Add to compare'}>
+          <IconButton
+            onClick={handleToggleCompare}
+            aria-label={
+              inCompare ? `Remove ${product.name} from compare` : `Compare ${product.name}`
+            }
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: 40,
+              right: 6,
+              bgcolor: 'background.paper',
+              '&:hover': { bgcolor: 'action.hover' },
+            }}
+          >
+            <CompareArrows fontSize="small" color={inCompare ? 'primary' : 'inherit'} />
+          </IconButton>
+        </Tooltip>
+
+        {/* Quick view */}
+        <Tooltip title="Quick view">
+          <IconButton
+            onClick={handleQuickView}
+            aria-label={`Quick view ${product.name}`}
+            size="small"
+            sx={{
+              position: 'absolute',
+              bottom: 8,
+              right: 8,
+              bgcolor: 'background.paper',
+              '&:hover': { bgcolor: 'action.hover' },
+            }}
+          >
+            <VisibilityOutlined fontSize="small" />
           </IconButton>
         </Tooltip>
 
@@ -255,6 +325,12 @@ const ProductCard = ({ product, priority = false }: ProductCardProps) => {
           {outOfStock ? 'Out of Stock' : 'Add to Cart'}
         </Button>
       </CardContent>
+
+      <QuickViewDialog
+        product={product}
+        open={quickViewOpen}
+        onClose={() => setQuickViewOpen(false)}
+      />
     </Card>
   );
 };

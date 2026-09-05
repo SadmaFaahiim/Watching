@@ -127,6 +127,10 @@ export interface Order {
   subtotal: number;
   tax: number;
   shipping: number;
+  /** Discount applied by a promo code (negative-line on the order). */
+  discount?: number;
+  /** The promo code that produced the discount, when one was applied. */
+  promoCode?: string;
   total: number;
   shippingAddress: ShippingAddress;
   orderStatus: OrderStatus;
@@ -153,6 +157,27 @@ export interface Review {
   images?: string[];
   verified: boolean;
   helpful: number;
+  createdAt: Date;
+}
+
+// Promo code Types
+export type PromoCodeType = 'percent' | 'fixed';
+
+export interface PromoCode {
+  id: string;
+  code: string;
+  type: PromoCodeType;
+  /** Percent off (0–100) when type is 'percent', flat amount when 'fixed'. */
+  value: number;
+  /** Smallest pre-discount order value the code applies to. */
+  minOrderValue?: number;
+  /** Largest discount the code can grant (percent codes). */
+  maxDiscount?: number;
+  /** When set, the code can be used at most this many times in total. */
+  usageLimit?: number;
+  usedCount: number;
+  active: boolean;
+  expiresAt?: Date;
   createdAt: Date;
 }
 

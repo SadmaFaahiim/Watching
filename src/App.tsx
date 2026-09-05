@@ -43,6 +43,7 @@ const AdminDashboard = lazy(() => import('@/features/admin/pages/AdminDashboardP
 const ManageProducts = lazy(() => import('@/features/admin/pages/ManageProductsPage'));
 const ManageOrders = lazy(() => import('@/features/admin/pages/ManageOrdersPage'));
 const ManageUsers = lazy(() => import('@/features/admin/pages/ManageUsersPage'));
+const ManageReviews = lazy(() => import('@/features/admin/pages/ManageReviewsPage'));
 const AddProduct = lazy(() => import('@/features/admin/pages/AddProductPage'));
 
 // Components
@@ -134,6 +135,7 @@ function App() {
                   <Route path="/admin/products/edit/:id" element={<AddProduct />} />
                   <Route path="/admin/orders" element={<ManageOrders />} />
                   <Route path="/admin/users" element={<ManageUsers />} />
+                  <Route path="/admin/reviews" element={<ManageReviews />} />
                 </Route>
 
                 {/* 404 */}

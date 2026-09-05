@@ -17,10 +17,11 @@ import { ExpandMore } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
-import { useAllOrders, useUpdateOrderStatus } from '@/api/orders.api';
+import { useAllOrders, useUpdateOrderStatus, useRefundOrder } from '@/api/orders.api';
 import OrderStatusBadge from '@/features/orders/components/OrderStatusBadge';
 import AuditTimeline from '@/features/orders/components/AuditTimeline';
 import { ORDER_STATUS_LABELS, PAYMENT_META } from '@/features/orders/constants';
+import { pushNotification } from '@/store/notifications.store';
 import SkeletonLoader from '@/components/common/SkeletonLoader';
 import EmptyState from '@/components/common/EmptyState';
 import { formatCurrency, formatDate } from '@/utils/helpers';
@@ -47,6 +48,7 @@ const ManageOrdersPage = () => {
   const [filter, setFilter] = useState<'all' | OrderStatus>('all');
   const { data: orders, isLoading, isError, refetch } = useAllOrders(1, 200);
   const updateStatus = useUpdateOrderStatus();
+  const refundOrder = useRefundOrder();
 
   const allOrders = useMemo(() => orders?.data ?? [], [orders]);
 
@@ -55,10 +57,36 @@ const ManageOrdersPage = () => {
     [allOrders, filter]
   );
 
-  const handleStatusChange = (order: Order, status: OrderStatus) => {
+  const handleStatusChange = async (order: Order, status: OrderStatus) => {
     const trackingNumber =
       status === 'shipped' && !order.trackingNumber ? undefined : order.trackingNumber;
-    void updateStatus.mutate({ orderId: order.id, status, trackingNumber });
+    try {
+      await updateStatus.mutateAsync({
+        orderId: order.id,
+        status,
+        trackingNumber,
+      });
+      pushNotification({
+        type: status === 'cancelled' ? 'warning' : 'info',
+        title: `Order ${order.id} updated`,
+        message: `Order ${order.id} is now ${status}.`,
+      });
+    } catch {
+      // Error toast is handled by the mutation hook.
+    }
+  };
+
+  const handleRefund = async (order: Order) => {
+    try {
+      await refundOrder.mutateAsync(order.id);
+      pushNotification({
+        type: 'success',
+        title: `Refund issued for ${order.id}`,
+        message: `${formatCurrency(order.total)} was refunded to the original payment method.`,
+      });
+    } catch {
+      // Error toast is handled by the mutation hook.
+    }
   };
 
   return (
@@ -115,6 +143,8 @@ const ManageOrdersPage = () => {
             const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
             const updatePending =
               updateStatus.isPending && updateStatus.variables?.orderId === order.id;
+            const refundPending = refundOrder.isPending && refundOrder.variables === order.id;
+            const refundable = order.paymentStatus === 'paid' && order.orderStatus !== 'cancelled';
             const nextOptions = NEXT_STATUS_OPTIONS[order.orderStatus] ?? [];
 
             return (
@@ -277,6 +307,22 @@ const ManageOrdersPage = () => {
                           variant="outlined"
                           size="small"
                         />
+                      )}
+                      {refundable && (
+                        <Button
+                          size="small"
+                          color="error"
+                          variant="outlined"
+                          disabled={refundPending || updatePending}
+                          onClick={() => void handleRefund(order)}
+                          sx={{ mt: 1, textTransform: 'none' }}
+                        >
+                          {refundPending
+                            ? 'Refunding…'
+                            : order.paymentStatus === 'refunded'
+                              ? 'Refunded'
+                              : 'Refund order'}
+                        </Button>
                       )}
                     </Grid>
                   </Grid>

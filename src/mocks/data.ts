@@ -1,4 +1,13 @@
-import type { AuditEvent, Order, Product, ProductFilters, SortOption, User } from '@/types';
+import type {
+  AuditEvent,
+  Order,
+  Product,
+  ProductFilters,
+  PromoCode,
+  Review,
+  SortOption,
+  User,
+} from '@/types';
 import { demoUserId } from '@/config';
 import {
   loadMockDb,
@@ -27,16 +36,8 @@ const IMAGE_POOL: Record<Product['category'], string[]> = {
     '1594534475808-b18fc33b045e',
     '1523170335258-f5ed11844a49',
   ],
-  casual: [
-    '1495856458515-0637185db551',
-    '1523275335684-37898b6baf30',
-    '1544117519-31a4b719223d',
-  ],
-  smart: [
-    '1587836374828-4dbafa94cf0e',
-    '1579586337278-3befd40fd17a',
-    '1623998021446-45cd9b269056',
-  ],
+  casual: ['1495856458515-0637185db551', '1523275335684-37898b6baf30', '1544117519-31a4b719223d'],
+  smart: ['1587836374828-4dbafa94cf0e', '1579586337278-3befd40fd17a', '1623998021446-45cd9b269056'],
   classic: [
     '1523170335258-f5ed11844a49',
     '1508057198894-247b23fe5ade',
@@ -234,12 +235,12 @@ const makeSeedUsers = (): User[] => [
   },
   {
     id: 'admin-priya',
-  email: 'admin@classicwatch.local',
-  displayName: 'Priya Sharma',
-  role: 'admin',
-  emailVerified: true,
-  mfaEnabled: false,
-  passkeys: [],
+    email: 'admin@classicwatch.local',
+    displayName: 'Priya Sharma',
+    role: 'admin',
+    emailVerified: true,
+    mfaEnabled: false,
+    passkeys: [],
     createdAt: new Date('2025-01-05T00:00:00Z'),
     updatedAt: new Date('2025-12-01T00:00:00Z'),
   },
@@ -346,6 +347,205 @@ const makeSeedOrders = (): Order[] => [
 
 export const seedOrders: Order[] = persisted?.orders ?? makeSeedOrders();
 
+// ---------------------------------------------------------------------------
+// Seeded reviews (deterministic — one cluster per seeded product) and promo
+// codes. Product rating/reviewCount aggregates are derived from the review
+// rows (see reconcile below), so the catalog numbers always match the review
+// list a customer actually sees on the detail page.
+// ---------------------------------------------------------------------------
+
+const REVIEWER_NAMES = [
+  'Sarah Khan',
+  'Miguel Alvarez',
+  'Ayesha Rahman',
+  'Daniel Fischer',
+  'Leo Martin',
+  'Emma Wilson',
+  'Noah Kim',
+  'Priya Sharma',
+];
+
+const POSITIVE_TITLES = [
+  'Flawless craftsmanship',
+  'Even better in person',
+  'My daily companion',
+  'Worth every penny',
+  'An heirloom piece',
+];
+
+const MID_TITLES = [
+  'Solid, with small caveats',
+  'Great value overall',
+  'Very good, not perfect',
+  'Beautiful dial',
+];
+
+const CRITICAL_TITLES = ['Beautiful but flawed', 'Not what I expected', 'Disappointed'];
+
+const POSITIVE_COMMENTS = [
+  'The finishing is superb — the dial catches the light beautifully and the movement keeps flawless time. Packaging felt genuinely premium.',
+  'I compared it against pieces twice the price and this holds its own. The case profile is elegant and it wears lighter than it looks.',
+  'Wore it daily for a month now. Keeps excellent time, the bracelet is comfortable, and I have received several compliments.',
+  'A true keeper. The details up close are what sold me: crisp dial printing, a satisfying crown action, and a lovely exhibition back.',
+];
+
+const MID_COMMENTS = [
+  'A very capable watch overall. The strap took a few days to break in, and I wish the lume were stronger, but the dial is gorgeous.',
+  'Solid build and accurate movement. Slightly heavier than I expected, but that actually adds to the presence on the wrist.',
+  'Good everyday piece. Delivery was fast and well packaged. Would recommend for anyone starting a collection.',
+];
+
+const CRITICAL_COMMENTS = [
+  'The watch itself is stunning, but mine arrived with a faint mark on the clasp. Customer service responded quickly, though.',
+  'The proportions look larger on the wrist than in the photos. If you have a smaller wrist, size down.',
+  'I had high hopes, but the water resistance rating feels optimistic for daily use. Otherwise the design is lovely.',
+];
+
+const clampRating = (value: number): number => Math.max(1, Math.min(5, Math.round(value)));
+
+/** Builds `count` integer ratings (1–5) whose average tracks `target`. */
+const ratingsFor = (count: number, target: number): number[] => {
+  const ratings: number[] = [];
+  let sum = 0;
+  for (let i = 0; i < count; i += 1) {
+    const wobble = [0, 0, 1, -1, 0, 1, 0][(i * 3 + Math.round(target)) % 7];
+    let value = clampRating(target + wobble);
+    // Pull back towards the running mean so a later run of bad luck cannot
+    // drag the final average far from the product's displayed rating.
+    const expected = Math.round((i + 1) * target);
+    if (sum + value > expected + 2) value = Math.max(1, value - 1);
+    if (sum + value < expected - 2) value = Math.min(5, value + 1);
+    ratings.push(value);
+    sum += value;
+  }
+  return ratings;
+};
+
+const reviewTitle = (rating: number, seed: number): string => {
+  const pool = rating >= 4 ? POSITIVE_TITLES : rating === 3 ? MID_TITLES : CRITICAL_TITLES;
+  return pool[seed % pool.length];
+};
+
+const reviewComment = (rating: number, seed: number): string => {
+  const pool = rating >= 4 ? POSITIVE_COMMENTS : rating === 3 ? MID_COMMENTS : CRITICAL_COMMENTS;
+  return pool[seed % pool.length];
+};
+
+const productIndex = (id: string): number | null => {
+  const match = /^p(\d{1,2})$/.exec(id);
+  if (!match) return null;
+  const index = Number(match[1]) - 1;
+  return index >= 0 && index < 64 ? index : null;
+};
+
+const makeSeedReviews = (): Review[] => {
+  const reviews: Review[] = [];
+  seedProducts.forEach((product, position) => {
+    const index = productIndex(product.id) ?? position;
+    const count = 2 + ((index * 5) % 7); // 2–8 reviews per product
+    const target =
+      product.rating > 0 ? product.rating : Number((3.9 + ((index * 37) % 10) / 10).toFixed(1));
+    const ratings = ratingsFor(count, target);
+
+    ratings.forEach((rating, row) => {
+      const seed = index * 7 + row * 3;
+      reviews.push({
+        id: `r${index + 1}-${row + 1}`,
+        productId: product.id,
+        userId: `reviewer-${(index + row) % REVIEWER_NAMES.length}`,
+        userName: REVIEWER_NAMES[(index + row) % REVIEWER_NAMES.length],
+        rating,
+        title: reviewTitle(rating, seed),
+        comment: reviewComment(rating, seed),
+        verified: (index + row) % 5 !== 0,
+        helpful: (index * 3 + row * 7) % 11,
+        createdAt: dayOffset(new Date(), -(12 + ((index * 3 + row * 5) % 90))),
+      });
+    });
+  });
+  return reviews;
+};
+
+const makeSeedPromoCodes = (): PromoCode[] => [
+  {
+    id: 'promo-1',
+    code: 'WELCOME10',
+    type: 'percent',
+    value: 10,
+    active: true,
+    usedCount: 12,
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+  },
+  {
+    id: 'promo-2',
+    code: 'LUXE200',
+    type: 'fixed',
+    value: 200,
+    minOrderValue: 1500,
+    active: true,
+    usedCount: 4,
+    createdAt: new Date('2026-02-01T00:00:00Z'),
+  },
+  {
+    id: 'promo-3',
+    code: 'SUMMER20',
+    type: 'percent',
+    value: 20,
+    minOrderValue: 800,
+    maxDiscount: 150,
+    usageLimit: 50,
+    usedCount: 3,
+    active: true,
+    expiresAt: new Date(Date.UTC(2026, 11, 31)),
+    createdAt: new Date('2026-06-01T00:00:00Z'),
+  },
+  {
+    id: 'promo-4',
+    code: 'WINTER25',
+    type: 'percent',
+    value: 25,
+    active: false,
+    usedCount: 99,
+    createdAt: new Date('2025-11-01T00:00:00Z'),
+  },
+];
+
+export const seedReviews: Review[] = persisted?.reviews ?? makeSeedReviews();
+export const seedPromoCodes: PromoCode[] = persisted?.promoCodes ?? makeSeedPromoCodes();
+
+// Snapshots written before the reviews collection existed carry product
+// rating/reviewCount fields from the older formula seeds. When we just
+// hydrated fresh review rows, reconcile the two so the aggregates shown on
+// cards and filters equal the actual review list.
+if (!persisted?.reviews) {
+  seedReviews.forEach((review) => {
+    const product = seedProducts.find((item) => item.id === review.productId);
+    if (!product) return;
+    const rows = seedReviews.filter((item) => item.productId === product.id);
+    if (rows.length === 0) return;
+    const average = rows.reduce((sum, item) => sum + item.rating, 0) / rows.length;
+    product.rating = Math.round(average * 10) / 10;
+    product.reviewCount = rows.length;
+  });
+}
+
+/** Recomputes a product's rating/reviewCount from its live review rows after a
+ * review mutation (used by the adapter so the catalog stays consistent). */
+export const recomputeProductRating = (productId: string): Product | undefined => {
+  const product = seedProducts.find((item) => item.id === productId);
+  if (!product) return undefined;
+  const rows = seedReviews.filter((item) => item.productId === productId);
+  if (rows.length === 0) {
+    product.rating = 0;
+    product.reviewCount = 0;
+    return product;
+  }
+  const average = rows.reduce((sum, item) => sum + item.rating, 0) / rows.length;
+  product.rating = Math.round(average * 10) / 10;
+  product.reviewCount = rows.length;
+  return product;
+};
+
 /** Append an immutable audit event to any entity carrying a history (shared by
  * the adapter and the demo auth helpers so all mutations log consistently). */
 export const appendEvent = <T extends { history?: AuditEvent[] }>(
@@ -361,7 +561,13 @@ export const appendEvent = <T extends { history?: AuditEvent[] }>(
 
 // Persist the current in-memory state so mutations survive reloads.
 export const persistMockDb = (): void => {
-  saveMockDb({ products: seedProducts, orders: seedOrders, users: seedUsers });
+  saveMockDb({
+    products: seedProducts,
+    orders: seedOrders,
+    users: seedUsers,
+    reviews: seedReviews,
+    promoCodes: seedPromoCodes,
+  });
 };
 
 // Wipe mutations and rebuild a pristine seed (used by the demo reset control).
@@ -370,6 +576,12 @@ export const resetMockDb = (): void => {
   seedProducts.splice(0, seedProducts.length, ...makeSeedProducts());
   seedUsers.splice(0, seedUsers.length, ...makeSeedUsers());
   seedOrders.splice(0, seedOrders.length, ...makeSeedOrders());
+  seedReviews.splice(0, seedReviews.length, ...makeSeedReviews());
+  seedPromoCodes.splice(0, seedPromoCodes.length, ...makeSeedPromoCodes());
+  // Regenerate the catalog aggregates from the freshly seeded review rows.
+  seedProducts.forEach((product) => {
+    recomputeProductRating(product.id);
+  });
   persistMockDb();
 };
 
@@ -384,7 +596,13 @@ export const exportMockDbBackup = (): string =>
       app: 'classic-watch-pro',
       exportedAt: new Date().toISOString(),
       schemaVersion: MOCK_DB_SCHEMA_VERSION,
-      snapshot: { products: seedProducts, orders: seedOrders, users: seedUsers },
+      snapshot: {
+        products: seedProducts,
+        orders: seedOrders,
+        users: seedUsers,
+        reviews: seedReviews,
+        promoCodes: seedPromoCodes,
+      },
     },
     null,
     2
@@ -431,6 +649,16 @@ export const importMockDbBackup = (contents: string): { ok: boolean; error?: str
   seedProducts.splice(0, seedProducts.length, ...migrated.snapshot.products);
   seedOrders.splice(0, seedOrders.length, ...migrated.snapshot.orders);
   seedUsers.splice(0, seedUsers.length, ...migrated.snapshot.users);
+  seedReviews.splice(0, seedReviews.length, ...(migrated.snapshot.reviews ?? makeSeedReviews()));
+  seedPromoCodes.splice(
+    0,
+    seedPromoCodes.length,
+    ...(migrated.snapshot.promoCodes ?? makeSeedPromoCodes())
+  );
+  // Keep aggregates coherent for older backups that predate the review rows.
+  seedProducts.forEach((product) => {
+    recomputeProductRating(product.id);
+  });
   persistMockDb();
   return { ok: true };
 };

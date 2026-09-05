@@ -2,7 +2,7 @@
 
 > A production-grade, security-first luxury watch e-commerce platform — **React 18 · TypeScript · Vite · MUI 6 · Zustand · TanStack Query** — that runs fully in **demo mode with zero configuration** and can switch to **real Firebase auth + Firestore** by adding credentials.
 
-![version](https://img.shields.io/badge/version-3.0.0-212121) ![license](https://img.shields.io/badge/license-MIT-blue) ![tests](https://img.shields.io/badge/tests-134%20passing-success) ![a11y](https://img.shields.io/badge/a11y-WCAG%20AA%20zero%20violations-4CAF50) ![PWA](https://img.shields.io/badge/PWA-ready-5A31F4) ![CI](https://img.shields.io/badge/CI-lint%20·%20tsc%20·%20tests%20·%20build%20·%20audit%20·%20Lighthouse-181717)
+![version](https://img.shields.io/badge/version-3.1.0-212121) ![license](https://img.shields.io/badge/license-MIT-blue) ![tests](https://img.shields.io/badge/tests-152%20passing-success) ![a11y](https://img.shields.io/badge/a11y-WCAG%20AA%20zero%20violations-4CAF50) ![PWA](https://img.shields.io/badge/PWA-ready-5A31F4) ![CI](https://img.shields.io/badge/CI-lint%20·%20tsc%20·%20tests%20·%20build%20·%20audit%20·%20E2E%20·%20Lighthouse-181717)
 
 ---
 
@@ -11,8 +11,10 @@
 ### Storefront
 
 - **Catalog & discovery** — responsive product grid with category / brand / price / rating filters, sorting, live search, featured & latest rails, and rich product detail pages with real Unsplash watch photography.
-- **Cart & checkout** — persisted cart, shipping/contact forms with Zod + react-hook-form schema validation, multiple payment methods, order confirmation with a full order-history view.
-- **Account area** — customer dashboard, order tracking & per-order activity timelines, wishlist, and profile/security management.
+- **Reviews & ratings** — rating-distribution summaries, verified-purchase badges, helpful votes, and a write-review flow whose aggregates stay coherent with the catalog (new reviews recompute each product's rating/count).
+- **Discovery extras** — a persisted **recently-viewed rail**, **quick-view** on every card, and a **side-by-side compare drawer** across up to four watches (specs, price, availability).
+- **Cart & checkout** — persisted cart, Zod + react-hook-form validation, multiple payment methods, **promo codes** (percent/fixed, min-order & usage caps — seeded codes like `WELCOME10`), and order confirmation with a full order-history view.
+- **Account area** — customer dashboard, order tracking & per-order activity timelines, wishlist, an in-app **notification center** (order status, refunds, stock alerts), and profile/security management.
 
 ### Accounts & security
 
@@ -24,9 +26,9 @@
 
 ### Admin & analytics
 
-- **Dashboard** — revenue / order / customer KPIs, dependency-free **SVG charts** (monthly revenue bars + order-status donut), inventory health, most-reviewed products.
+- **Dashboard** — revenue / order / customer KPIs, dependency-free **SVG charts** (monthly revenue bars + order-status donut), inventory health, most-reviewed products, and **top customers** by lifetime spend.
 - **Sales reports** — export analytics to **CSV** or a **print-to-PDF** report; every export is HTML-escaped so report content can never inject markup.
-- **Management** — products CRUD, orders (status workflow + tracking notes), users (roles, 2FA/passkey badges, activity dialogs), and a **Backup / Restore / Reset** console for the demo database.
+- **Management** — products CRUD, orders (status workflow + tracking notes + one-click **refunds** that append an immutable audit event), users (roles, 2FA/passkey badges, activity dialogs), a **review moderation queue**, and a **Backup / Restore / Reset** console for the demo database.
 
 ### Demo-data layer (no backend required)
 
@@ -42,6 +44,7 @@
 - **Fast first paint** — critical CSS + an app-shell hero are inlined in `index.html` (FCP ≈ 0.7 s), Google Fonts load asynchronously (non-render-blocking), and the LCP images carry `fetchpriority="high"` while below-fold images stay lazy.
 - **Lazy Firebase** — the Firebase SDK is dynamically imported; **demo-mode builds ship zero Firebase bytes** on the critical path, and route-level code splitting keeps page chunks tiny.
 - **Dark-mode palette** engineered to **AA+** (key semantic pairs measured ≥ 5.15:1) and every page passes automated **WCAG 2.1 AA** scans in both themes.
+- **Luxury design language (v3.1)** — warm ivory canvas + midnight-navy accents in light mode, and an editorial serif display face (Playfair Display, loaded async and CLS-safe) for headings.
 
 ---
 
@@ -58,7 +61,8 @@
 | Forms / validation | React Hook Form (pinned 7.53.x — avoids a known `formState.errors` regression) + Zod |
 | Auth               | Firebase Auth (lazy-loaded) · `@simplewebauthn/browser` + `@simplewebauthn/server`   |
 | HTTP               | Axios with interceptors + an in-app mock adapter                                     |
-| Tests              | Vitest · React Testing Library · jsdom · **axe-core**                                |
+| Tests              | Vitest · React Testing Library · jsdom · **axe-core** · **Playwright E2E**           |
+| Error tracking     | Sentry (`@sentry/react`) — lazily loaded only when `VITE_SENTRY_DSN` is set          |
 | Quality            | ESLint (incl. `eslint-plugin-security`) · Prettier · `tsc --noEmit`                  |
 
 ---
@@ -121,15 +125,19 @@ Run the full gate locally (exactly what CI runs):
 npm run lint && npm run type-check && npm test && npm run build
 ```
 
-**134 tests across 20 files**, covering:
+**152 unit/component tests across 23 files**, covering:
 
 - **Accessibility regression suite** (`src/features/__tests__/a11y.test.tsx`) — full-page axe-core scans (WCAG 2.1 AA) on 18 routes: storefront, auth, dashboard, checkout and admin surfaces. This suite catches structural defects jsdom renders even when a narrow viewport hides them — it found and drove fixes for heading-order breaks, a price-slider with no accessible name, unlabelled MUI Selects, and bare `<a>` elements inside `<ul>` in the sidebar.
+- Store-level behavior — cart **promo-code discount math**, notifications feed (read/unread/cap), recently-viewed dedupe & cap, compare toggle limits.
+- Mock-adapter integration — **reviews** (list/create/verified/helpful/delete with aggregate recompute), **promo validation & redemption**, **refund** eligibility + audit, persistence across reloads.
 - Auth-store state machines — MFA enrollment/verify/disable, email verification, passkeys incl. legacy fallback.
 - Route guards (protected / admin / email-verification) and header navigation.
 - Storage round-trips + **schema migrations** + adapter integration (mutation → reload → persistence).
 - WebAuthn verification helpers, CSV/print export escaping, chart rendering.
 
-**CI** (`.github/workflows/ci.yml`, two parallel jobs): Quality gates — lint → type-check → unit tests → production build → production-dependency audit — and a Lighthouse budget job against the built app. Concurrency cancels stale runs so PRs iterate fast.
+**CI** (`.github/workflows/ci.yml`, three parallel jobs): Quality gates — lint → type-check → unit tests → production build → production-dependency audit — a **Playwright E2E smoke job** (buy flow, auth + admin guard, moderation), and a Lighthouse budget job against the built app. Concurrency cancels stale runs so PRs iterate fast.
+
+> Demo promo codes: `WELCOME10` (10% off) · `LUXE200` ($200 off orders ≥ $1,500) · `SUMMER20` (20% off up to $150, orders ≥ $800).
 
 ---
 

@@ -78,12 +78,12 @@ export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      orderId, 
+    mutationFn: async ({
+      orderId,
       status,
-      trackingNumber 
-    }: { 
-      orderId: string; 
+      trackingNumber,
+    }: {
+      orderId: string;
       status: OrderStatus;
       trackingNumber?: string;
     }) => {
@@ -101,6 +101,27 @@ export const useUpdateOrderStatus = () => {
     },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error, 'Failed to update order status'));
+    },
+  });
+};
+
+// Refund order (Admin)
+export const useRefundOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: string) => {
+      const response = await api.patch<Order>(`/orders/${orderId}/refund`);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: orderKeys.myOrders(data.userId) });
+      toast.success('Refund issued');
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Failed to refund this order'));
     },
   });
 };

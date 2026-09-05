@@ -29,7 +29,7 @@
     <meta name="twitter:image" content="/og-image.png" />
 
     <!-- Theme Color -->
-    <meta name="theme-color" content="#3867D6" />
+    <meta name="theme-color" content="#24447C" />
 
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -43,14 +43,14 @@
 
     <!-- Google Fonts — fetched async so the stylesheet never blocks first
          paint; display=swap renders fallback text immediately and swaps in
-         Inter when ready. -->
+         Inter/Playfair Display when ready. -->
     <link
       rel="preload"
       as="style"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
       rel="stylesheet"
       media="print"
       onload="this.media = 'all'"
@@ -58,7 +58,7 @@
     <noscript>
       <link
         rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
       />
     </noscript>
 
@@ -88,7 +88,7 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         overflow-x: hidden;
-        background: #f9fafb;
+        background: #f7f5f1;
       }
 
       html.dark body {
@@ -140,13 +140,13 @@
 
       /* Selection styles */
       ::selection {
-        background-color: #3867d6;
+        background-color: #24447c;
         color: white;
       }
 
       /* Focus visible styles */
       :focus-visible {
-        outline: 2px solid #3867d6;
+        outline: 2px solid #24447c;
         outline-offset: 2px;
       }
 
@@ -278,7 +278,7 @@
         min-height: 100vh;
         display: flex;
         flex-direction: column;
-        background: #f9fafb;
+        background: #f7f5f1;
       }
 
       html.dark .shell {
@@ -306,7 +306,7 @@
         font-weight: 800;
         font-size: 1.05rem;
         letter-spacing: -0.01em;
-        color: #1f2937;
+        color: #1f2430;
       }
 
       html.dark .shell-brand {
@@ -317,7 +317,7 @@
         width: 30px;
         height: 30px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #3867d6 0%, #2849a5 100%);
+        background: linear-gradient(135deg, #24447c 0%, #18315a 100%);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -329,7 +329,7 @@
         position: relative;
         overflow: hidden;
         color: #fff;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #2849a5 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #18315a 100%);
         flex: 1;
       }
 
@@ -379,9 +379,10 @@
 
       .shell-hero h1 {
         margin-top: 10px;
+        font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
         font-size: 2.4rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
+        font-weight: 700;
+        letter-spacing: -0.015em;
         line-height: 1.2;
       }
 
@@ -420,7 +421,7 @@
 
       .shell-btn-primary {
         color: #fff;
-        background: linear-gradient(135deg, #3867d6 0%, #2849a5 100%);
+        background: linear-gradient(135deg, #24447c 0%, #18315a 100%);
       }
 
       .shell-btn-outline {

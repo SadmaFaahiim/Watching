@@ -35,6 +35,10 @@ dist-ssr
 coverage
 *.lcov
 
+# Playwright (E2E)
+test-results
+playwright-report
+
 # Build
 build
 .cache
