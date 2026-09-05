@@ -1,13 +1,10 @@
-import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
-import type { Firestore } from 'firebase/firestore';
-import type { FirebaseStorage } from 'firebase/storage';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import config from '@/config';
 
-let app: FirebaseApp | undefined;
-let auth: Auth | undefined;
-let db: Firestore | undefined;
-let storage: FirebaseStorage | undefined;
+let app: any;
+let auth: any;
+let db: any;
+let storage: any;
 let initPromise: Promise<void> | null = null;
 let warned = false;
 
@@ -58,8 +55,8 @@ export const initializeFirebase = (): Promise<void> => {
   return initPromise;
 };
 
-export const getFirebaseAuth = (): Auth | undefined => auth;
-export const getFirebaseDb = (): Firestore | undefined => db;
-export const getFirebaseStorage = (): FirebaseStorage | undefined => storage;
+export const getFirebaseAuth = (): any => auth;
+export const getFirebaseDb = (): any => db;
+export const getFirebaseStorage = (): any => storage;
 
 export { app, auth, db, storage };
