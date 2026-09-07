@@ -22,7 +22,7 @@ const SimpleBarChart = ({
   data,
   formatValue = (value) => String(value),
   height = 180,
-  color = '#3867D6',
+  color = '#24447C',
   ariaLabel = 'Bar chart',
 }: SimpleBarChartProps) => {
   const SLOT = 20; // horizontal units per bar slot

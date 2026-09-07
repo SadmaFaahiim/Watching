@@ -7,7 +7,7 @@ const Hero = () => {
     <Box
       sx={{
         color: 'common.white',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #2849A5 100%)',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #18315A 100%)',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -58,7 +58,7 @@ const Hero = () => {
                 to="/products"
                 sx={{
                   color: 'common.white',
-                  background: 'linear-gradient(135deg, #3867D6 0%, #2849A5 100%)',
+                  background: 'linear-gradient(135deg, #24447C 0%, #18315A 100%)',
                 }}
               >
                 Shop Collection

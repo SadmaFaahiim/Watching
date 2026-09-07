@@ -37,6 +37,7 @@ import AdminDashboardPage from '@/features/admin/pages/AdminDashboardPage';
 import ManageProductsPage from '@/features/admin/pages/ManageProductsPage';
 import ManageOrdersPage from '@/features/admin/pages/ManageOrdersPage';
 import ManageUsersPage from '@/features/admin/pages/ManageUsersPage';
+import ManageReviewsPage from '@/features/admin/pages/ManageReviewsPage';
 import AddProductPage from '@/features/admin/pages/AddProductPage';
 
 import { useAuthStore } from '@/store/auth.store';
@@ -124,6 +125,7 @@ const AppRoutes = () => (
       <Route path="/admin/products/add" element={<AddProductPage />} />
       <Route path="/admin/orders" element={<ManageOrdersPage />} />
       <Route path="/admin/users" element={<ManageUsersPage />} />
+      <Route path="/admin/reviews" element={<ManageReviewsPage />} />
     </Route>
   </Routes>
 );
@@ -315,6 +317,19 @@ describe('accessibility regression tests (axe-core, WCAG A/AA)', () => {
     renderPage('/admin/users', 'admin');
     await waitForContent();
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    await expectNoA11yViolations();
+  });
+
+  it('admin reviews', async () => {
+    renderPage('/admin/reviews', 'admin');
+    // Admin reviews renders a large table — use a longer timeout for the initial paint.
+    await waitFor(
+      () => {
+        expect(document.querySelector('h1')).not.toBeNull();
+        expect(document.querySelector('.MuiCircularProgress-root')).toBeNull();
+      },
+      { timeout: 15000 }
+    );
     await expectNoA11yViolations();
   });
 });

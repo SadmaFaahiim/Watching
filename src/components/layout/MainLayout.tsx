@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { Box } from '@mui/material';
 import Header from './Header';
 import Footer from './Footer';
+import CompareDrawer from '@/features/products/components/CompareDrawer';
 
 const MainLayout = () => {
   return (
@@ -11,6 +12,7 @@ const MainLayout = () => {
         <Outlet />
       </Box>
       <Footer />
+      <CompareDrawer />
     </Box>
   );
 };

@@ -10,6 +10,9 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useAuthStore } from '@/store/auth.store';
 import { useThemeStore } from '@/store/theme.store';
 
+// Cross-tab sync
+import { useCrossTabCartSync } from '@/features/cart/hooks/useCrossTabCartSync';
+
 // Theme
 import { createAppTheme } from '@/styles/theme';
 
@@ -43,6 +46,7 @@ const AdminDashboard = lazy(() => import('@/features/admin/pages/AdminDashboardP
 const ManageProducts = lazy(() => import('@/features/admin/pages/ManageProductsPage'));
 const ManageOrders = lazy(() => import('@/features/admin/pages/ManageOrdersPage'));
 const ManageUsers = lazy(() => import('@/features/admin/pages/ManageUsersPage'));
+const ManageReviews = lazy(() => import('@/features/admin/pages/ManageReviewsPage'));
 const AddProduct = lazy(() => import('@/features/admin/pages/AddProductPage'));
 
 // Components
@@ -70,6 +74,9 @@ function App() {
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  // Keep the cart in sync across open tabs.
+  useCrossTabCartSync();
 
   // Create theme based on dark mode
   const theme = createAppTheme(isDark ? 'dark' : 'light');
@@ -134,6 +141,7 @@ function App() {
                   <Route path="/admin/products/edit/:id" element={<AddProduct />} />
                   <Route path="/admin/orders" element={<ManageOrders />} />
                   <Route path="/admin/users" element={<ManageUsers />} />
+                  <Route path="/admin/reviews" element={<ManageReviews />} />
                 </Route>
 
                 {/* 404 */}

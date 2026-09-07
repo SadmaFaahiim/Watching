@@ -1,18 +1,24 @@
-import type { Order, Product, User } from '@/types';
+import type { Order, Product, PromoCode, Review, User } from '@/types';
 
 /**
  * Versioned localStorage persistence for the in-memory mock database.
  *
  * Mutations made through the mock adapter (orders placed, products added,
- * statuses advanced, roles toggled, 2FA enrolled) normally vanish on reload.
- * This module snapshots the three seeded collections under a stable key and
- * restores them on the next boot, so demo QA survives refreshes.
+ * statuses advanced, roles toggled, 2FA enrolled, reviews written, promo
+ * codes redeemed) normally vanish on reload. This module snapshots the
+ * seeded collections under a stable key and restores them on the next boot,
+ * so demo QA survives refreshes.
  *
  * Every snapshot carries a schemaVersion envelope. Bump SCHEMA_VERSION when a
  * seed shape changes and register a migration for the previous version — old
  * snapshots are upgraded in place instead of silently discarded. Snapshots
  * from versions with no migration path (or from the future) fall back to a
  * fresh seed.
+ *
+ * `reviews` and `promoCodes` are optional collections: snapshots written by
+ * earlier schema versions predate them, and the seed layer hydrates the
+ * current deterministic seed rows whenever a collection is missing — an old
+ * snapshot never blocks a boot, it just gains the demo fixtures.
  */
 
 export const MOCK_DB_SCHEMA_VERSION = 2;
@@ -23,6 +29,8 @@ export interface MockDbSnapshot {
   products: Product[];
   orders: Order[];
   users: User[];
+  reviews?: Review[];
+  promoCodes?: PromoCode[];
 }
 
 interface PersistedMockDb {
@@ -41,7 +49,7 @@ export const registerMockDbMigration = (fromVersion: number, migrate: Migration)
 
 // Date-typed fields across the entity graph. JSON.stringify turns Date into an
 // ISO string, so on load we revive exactly these keys back into Date objects.
-const DATE_KEYS = new Set(['createdAt', 'updatedAt', 'addedAt', 'at']);
+const DATE_KEYS = new Set(['createdAt', 'updatedAt', 'addedAt', 'at', 'expiresAt']);
 
 const isDateString = (value: unknown): value is string =>
   typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value);

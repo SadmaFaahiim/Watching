@@ -75,7 +75,7 @@ const CartPage = () => {
                       justifyContent: 'center',
                       background: item.product.thumbnail
                         ? undefined
-                        : 'linear-gradient(135deg, #3867D6 0%, #2849A5 100%)',
+                        : 'linear-gradient(135deg, #24447C 0%, #18315A 100%)',
                     }}
                   >
                     {item.product.thumbnail ? (

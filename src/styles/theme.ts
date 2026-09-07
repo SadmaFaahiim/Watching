@@ -1,18 +1,23 @@
 import { createTheme, Theme, ThemeOptions } from '@mui/material/styles';
 
+// Editorial serif for display headings (luxury watch buyers respond to
+// restraint + classic typography); Inter stays for body, prices and labels.
+const DISPLAY_SERIF = '"Playfair Display", "Georgia", "Times New Roman", serif';
+
 const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
   palette: {
     mode,
-    // Deep royal blue reads as the brand accent on light surfaces, but as text
-    // on the dark surfaces it fails WCAG AA (≈3.5:1). Dark mode therefore uses
-    // a lighter periwinkle primary for text/links/outlines while contained
-    // buttons keep the deep-blue gradient via the MuiButton override below.
+    // Light mode wears an understated midnight navy (typographic, gallery-like)
+    // on warm ivory surfaces; the loud royal blue is gone. Dark mode keeps the
+    // light periwinkle primary: it is the only shade that clears WCAG AA for
+    // text/links against navy surfaces, and contained buttons keep their own
+    // gradient below.
     primary:
       mode === 'light'
         ? {
-            main: '#3867D6',
-            light: '#5F85DB',
-            dark: '#2849A5',
+            main: '#24447C',
+            light: '#3D5C94',
+            dark: '#18315A',
             contrastText: '#ffffff',
           }
         : {
@@ -52,13 +57,14 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
     },
     ...(mode === 'light'
       ? {
+          // Warm ivory canvas + white cards — the boutique, not the SaaS.
           background: {
-            default: '#F9FAFB',
+            default: '#F7F5F1',
             paper: '#FFFFFF',
           },
           text: {
-            primary: '#1F2937',
-            secondary: '#6B7280',
+            primary: '#1F2430',
+            secondary: '#5F6B7A',
           },
         }
       : {
@@ -76,34 +82,46 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    // Display faces set the editorial tone; fixed sizes/line-heights mean the
+    // async font swap only re-inks glyphs and cannot shift layout (CLS-safe).
     h1: {
+      fontFamily: DISPLAY_SERIF,
       fontSize: '3rem',
       fontWeight: 700,
       lineHeight: 1.2,
+      letterSpacing: '-0.015em',
     },
     h2: {
+      fontFamily: DISPLAY_SERIF,
       fontSize: '2.5rem',
       fontWeight: 700,
       lineHeight: 1.3,
+      letterSpacing: '-0.01em',
     },
     h3: {
+      fontFamily: DISPLAY_SERIF,
       fontSize: '2rem',
-      fontWeight: 600,
+      fontWeight: 700,
       lineHeight: 1.4,
+      letterSpacing: '-0.01em',
     },
     h4: {
+      fontFamily: DISPLAY_SERIF,
       fontSize: '1.5rem',
-      fontWeight: 600,
+      fontWeight: 700,
       lineHeight: 1.4,
+      letterSpacing: '-0.005em',
     },
     h5: {
+      fontFamily: DISPLAY_SERIF,
       fontSize: '1.25rem',
-      fontWeight: 600,
+      fontWeight: 700,
       lineHeight: 1.5,
     },
     h6: {
-      fontSize: '1rem',
-      fontWeight: 600,
+      fontFamily: DISPLAY_SERIF,
+      fontSize: '1.0625rem',
+      fontWeight: 700,
       lineHeight: 1.5,
     },
     button: {
@@ -181,9 +199,15 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
           },
         },
         containedPrimary: {
-          background: 'linear-gradient(135deg, #3867D6 0%, #2849A5 100%)',
+          background:
+            mode === 'light'
+              ? 'linear-gradient(135deg, #24447C 0%, #18315A 100%)'
+              : 'linear-gradient(135deg, #4A5FC1 0%, #3867D6 100%)',
           '&:hover': {
-            background: 'linear-gradient(135deg, #2849A5 0%, #1D3682 100%)',
+            background:
+              mode === 'light'
+                ? 'linear-gradient(135deg, #18315A 0%, #10224B 100%)'
+                : 'linear-gradient(135deg, #3867D6 0%, #2A4FB8 100%)',
           },
         },
       },

@@ -34,11 +34,16 @@ import {
   AdminPanelSettingsOutlined,
   PersonOutline,
   Logout,
+  NotificationsNoneOutlined,
+  NotificationsActiveOutlined,
+  DoneAll,
 } from '@mui/icons-material';
 import { useAuthStore } from '@/store/auth.store';
 import { useCartStore } from '@/store/cart.store';
 import { useWishlistStore } from '@/store/wishlist.store';
+import { useNotificationsStore } from '@/store/notifications.store';
 import { useThemeStore } from '@/store/theme.store';
+import { getRelativeTime } from '@/utils/helpers';
 
 interface NavItem {
   label: string;
@@ -59,11 +64,16 @@ const Header = () => {
   const { user, isAuthenticated, isAdmin, signOut } = useAuthStore();
   const itemCount = useCartStore((state) => state.itemCount);
   const wishlistCount = useWishlistStore((state) => state.items.length);
+  const notifications = useNotificationsStore((state) => state.items);
+  const unreadCount = useNotificationsStore((state) => state.unreadCount);
+  const markRead = useNotificationsStore((state) => state.markRead);
+  const markAllRead = useNotificationsStore((state) => state.markAllRead);
   const { isDark, setMode } = useThemeStore();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [accountAnchor, setAccountAnchor] = useState<null | HTMLElement>(null);
+  const [notificationAnchor, setNotificationAnchor] = useState<null | HTMLElement>(null);
 
   const handleSearchSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -250,6 +260,110 @@ const Header = () => {
               />
             </Box>
           )}
+
+          {/* Notifications */}
+          <Tooltip
+            title={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}
+          >
+            <IconButton
+              onClick={(event) => setNotificationAnchor(event.currentTarget)}
+              aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+              aria-haspopup="menu"
+              aria-expanded={Boolean(notificationAnchor)}
+            >
+              <Badge badgeContent={unreadCount} color="error" max={9}>
+                {unreadCount > 0 ? <NotificationsActiveOutlined /> : <NotificationsNoneOutlined />}
+              </Badge>
+            </IconButton>
+          </Tooltip>
+          <Menu
+            anchorEl={notificationAnchor}
+            open={Boolean(notificationAnchor)}
+            onClose={() => setNotificationAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            PaperProps={{ sx: { width: 360, maxHeight: 480, mt: 1 } }}
+          >
+            <Box
+              sx={{
+                px: 2,
+                py: 1,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Typography variant="subtitle2" fontWeight={700}>
+                Notifications
+              </Typography>
+              <Button
+                size="small"
+                startIcon={<DoneAll fontSize="small" />}
+                onClick={markAllRead}
+                disabled={unreadCount === 0}
+                sx={{ textTransform: 'none' }}
+              >
+                Mark all read
+              </Button>
+            </Box>
+            <Divider />
+            {notifications.length === 0 ? (
+              <Box sx={{ px: 2, py: 3, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  You are all caught up.
+                </Typography>
+              </Box>
+            ) : (
+              notifications.slice(0, 20).map((notification) => (
+                <Box key={notification.id}>
+                  <MenuItem
+                    onClick={() => markRead(notification.id)}
+                    sx={{
+                      alignItems: 'flex-start',
+                      px: 2,
+                      py: 1.25,
+                      bgcolor: notification.read ? 'transparent' : 'action.hover',
+                    }}
+                  >
+                    <Box
+                      component="span"
+                      aria-hidden="true"
+                      sx={{
+                        mt: 0.4,
+                        mr: 1.5,
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        flexShrink: 0,
+                        bgcolor: notification.read ? 'transparent' : 'primary.main',
+                      }}
+                    />
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="subtitle2" fontWeight={notification.read ? 500 : 700}>
+                        {notification.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {notification.message}
+                      </Typography>
+                      <Typography variant="caption" color="text.disabled">
+                        {getRelativeTime(new Date(notification.timestamp))}
+                      </Typography>
+                    </Box>
+                  </MenuItem>
+                  <Divider />
+                </Box>
+              ))
+            )}
+          </Menu>
 
           {/* Theme toggle */}
           <Tooltip title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>

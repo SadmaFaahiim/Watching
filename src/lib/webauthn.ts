@@ -1,10 +1,21 @@
-import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 import type {
   AuthenticationResponseJSON,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
   RegistrationResponseJSON,
 } from '@simplewebauthn/browser';
+
+// Lazy-loaded — only needed when a passkey ceremony actually runs. Keeping
+// this out of the app shell avoids shipping ~200 KB of CBOR/attestation code
+// to every visitor, most of whom will never use passkeys.
+let webAuthnBrowser: typeof import('@simplewebauthn/browser') | null = null;
+
+async function getWebAuthnBrowser(): Promise<typeof import('@simplewebauthn/browser')> {
+  if (!webAuthnBrowser) {
+    webAuthnBrowser = await import('@simplewebauthn/browser');
+  }
+  return webAuthnBrowser;
+}
 import type { PasskeyRecord } from '@/types';
 
 // ---------------------------------------------------------------------------
@@ -56,11 +67,10 @@ export const fromBase64Url = (value: string): Uint8Array<ArrayBuffer> => {
 /** 32 random bytes, base64url — the challenge is never reused. */
 export const generateChallenge = (): string => {
   const bytes = new Uint8Array(32);
-  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-    crypto.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+  if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') {
+    throw new Error('Secure random number generation is unavailable in this environment.');
   }
+  crypto.getRandomValues(bytes);
   return toBase64Url(bytes);
 };
 
@@ -95,6 +105,7 @@ export const runPasskeyRegistration = async (
   options: { userName: string; userDisplayName: string; userId: string; challenge: string },
   existingCredentialIds: string[]
 ): Promise<PasskeyRegistrationResult> => {
+  const { startRegistration } = await getWebAuthnBrowser();
   const creationOptions: PublicKeyCredentialCreationOptionsJSON = {
     rp: { name: RP_NAME, id: getRpId() },
     user: {
@@ -162,6 +173,7 @@ export const runPasskeyAuthentication = async (options: {
   challenge: string;
   allowCredentials: { id: string; transports?: string[] }[];
 }): Promise<AuthenticationResponseJSON> => {
+  const { startAuthentication } = await getWebAuthnBrowser();
   const requestOptions: PublicKeyCredentialRequestOptionsJSON = {
     challenge: options.challenge,
     rpId: getRpId(),

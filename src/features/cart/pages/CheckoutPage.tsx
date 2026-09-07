@@ -7,6 +7,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   Container,
   Divider,
   FormControl,
@@ -26,10 +27,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { Close } from '@mui/icons-material';
 import toast from 'react-hot-toast';
 import { useCreateOrder } from '@/api/orders.api';
+import { validatePromoCode } from '@/api/promos.api';
 import { useAuthStore } from '@/store/auth.store';
 import { useCartStore } from '@/store/cart.store';
+import { useNotificationsStore } from '@/store/notifications.store';
+import { getApiErrorMessage } from '@/lib/axios';
 import { formatCurrency } from '@/utils/helpers';
 import EmptyState from '@/components/common/EmptyState';
 import type { Order } from '@/types';
@@ -108,8 +113,16 @@ const CheckoutPage = () => {
   const user = useAuthStore((state) => state.user);
   const items = useCartStore((state) => state.items);
   const total = useCartStore((state) => state.total);
+  const discount = useCartStore((state) => state.discount);
+  const promoCode = useCartStore((state) => state.promoCode);
+  const appliedPromo = useCartStore((state) => state.appliedPromo);
+  const applyPromoCode = useCartStore((state) => state.applyPromoCode);
+  const removePromoCode = useCartStore((state) => state.removePromoCode);
   const clearCart = useCartStore((state) => state.clearCart);
+  const pushNotification = useNotificationsStore((state) => state.push);
   const createOrder = useCreateOrder();
+  const [promoInput, setPromoInput] = useState('');
+  const [promoBusy, setPromoBusy] = useState(false);
 
   const [activeStep, setActiveStep] = useState(0);
 
@@ -175,8 +188,25 @@ const CheckoutPage = () => {
 
   const subtotal = total;
   const shipping = subtotal >= 500 ? 0 : 15;
-  const tax = Math.round(subtotal * 0.05 * 100) / 100;
-  const grandTotal = Math.round((subtotal + shipping + tax) * 100) / 100;
+  const discountedSubtotal = Math.max(0, subtotal - discount);
+  const tax = Math.round(discountedSubtotal * 0.05 * 100) / 100;
+  const grandTotal = Math.round((discountedSubtotal + shipping + tax) * 100) / 100;
+
+  const handleApplyPromo = async () => {
+    const code = promoInput.trim();
+    if (!code) return;
+    setPromoBusy(true);
+    try {
+      const promo = await validatePromoCode(code, subtotal);
+      applyPromoCode(promo);
+      setPromoInput('');
+      toast.success(`Promo ${promo.code} applied`);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'That promo code could not be applied.'));
+    } finally {
+      setPromoBusy(false);
+    }
+  };
 
   const handleNext = async () => {
     const fields = STEP_FIELDS[activeStep];
@@ -204,6 +234,8 @@ const CheckoutPage = () => {
     subtotal,
     shipping,
     tax,
+    discount: appliedPromo ? discount : undefined,
+    promoCode: appliedPromo?.code,
     total: grandTotal,
     shippingAddress: {
       fullName: watched.fullName,
@@ -225,8 +257,12 @@ const CheckoutPage = () => {
     if (!user) return;
     try {
       const order = await createOrder.mutateAsync(buildOrderPayload());
+      pushNotification({
+        type: 'success',
+        title: 'Order placed',
+        message: `Order ${order.id} was placed successfully.${appliedPromo ? ` Promo ${appliedPromo.code} applied.` : ''}`,
+      });
       clearCart();
-      toast.success('Order placed successfully');
       navigate(`/orders/${order.id}`);
     } catch {
       // Error toast is shown by the mutation hook
@@ -512,6 +548,16 @@ const CheckoutPage = () => {
               <Typography color="text.secondary">Subtotal</Typography>
               <Typography fontWeight={600}>{formatCurrency(subtotal)}</Typography>
             </Box>
+            {discount > 0 && appliedPromo && (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography color="success.main" variant="body2" fontWeight={600}>
+                  Promo {appliedPromo.code}
+                </Typography>
+                <Typography color="success.main" fontWeight={600}>
+                  −{formatCurrency(discount)}
+                </Typography>
+              </Box>
+            )}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
               <Typography color="text.secondary">Shipping</Typography>
               <Typography fontWeight={600}>
@@ -532,6 +578,45 @@ const CheckoutPage = () => {
                 {formatCurrency(grandTotal)}
               </Typography>
             </Box>
+            {/* Promo code */}
+            {appliedPromo ? (
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 2 }}>
+                <Chip
+                  label={promoCode}
+                  color="success"
+                  variant="outlined"
+                  onDelete={removePromoCode}
+                  deleteIcon={<Close fontSize="small" />}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  {formatCurrency(discount)} off applied
+                </Typography>
+              </Stack>
+            ) : (
+              <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                <TextField
+                  size="small"
+                  fullWidth
+                  label="Promo code"
+                  value={promoInput}
+                  onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      void handleApplyPromo();
+                    }
+                  }}
+                  inputProps={{ maxLength: 20 }}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={() => void handleApplyPromo()}
+                  disabled={promoBusy || promoInput.trim().length === 0}
+                >
+                  Apply
+                </Button>
+              </Box>
+            )}
             <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 2 }}>
               Free insured shipping on orders over {formatCurrency(500)}.
             </Typography>

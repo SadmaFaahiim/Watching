@@ -66,10 +66,10 @@ describe('ProductCard', () => {
     const user = userEvent.setup();
 
     renderCard({ id: 'p3' });
-    await user.click(screen.getByRole('button', { name: 'Add to wishlist' }));
+    await user.click(screen.getByRole('button', { name: 'Add Classic Diver to wishlist' }));
     expect(useWishlistStore.getState().items.map((item) => item.productId)).toEqual(['p3']);
 
-    await user.click(screen.getByRole('button', { name: 'Remove from wishlist' }));
+    await user.click(screen.getByRole('button', { name: 'Remove Classic Diver from wishlist' }));
     expect(useWishlistStore.getState().items).toHaveLength(0);
   });
 

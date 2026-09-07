@@ -1,9 +1,17 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import type { Cart, CartItem, Product } from '@/types';
+import type { Cart, CartItem, Product, PromoCode } from '@/types';
+import { discountForPromo } from '@/mocks/adapter';
 
 interface CartStore extends Cart {
+  /** The promo code applied to the cart, when one is active. */
+  promoCode: string | null;
+  /** The validated promo definition backing `promoCode` (used to recompute the
+   * discount whenever the subtotal changes). */
+  appliedPromo: PromoCode | null;
+  /** Current promo discount on the subtotal (0 when none is applied). */
+  discount: number;
   // Actions
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
@@ -11,7 +19,16 @@ interface CartStore extends Cart {
   clearCart: () => void;
   getItem: (productId: string) => CartItem | undefined;
   calculateTotal: () => void;
+  applyPromoCode: (promo: PromoCode) => void;
+  removePromoCode: () => void;
 }
+
+/** Recomputes counts, subtotal and (promo) discount for the current items. */
+const recompute = (state: CartStore): void => {
+  state.itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
+  state.total = state.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  state.discount = state.appliedPromo ? discountForPromo(state.appliedPromo, state.total) : 0;
+};
 
 export const useCartStore = create<CartStore>()(
   persist(
@@ -19,12 +36,13 @@ export const useCartStore = create<CartStore>()(
       items: [],
       total: 0,
       itemCount: 0,
+      promoCode: null,
+      appliedPromo: null,
+      discount: 0,
 
       addItem: (product, quantity = 1) => {
         set((state) => {
-          const existingItem = state.items.find(
-            (item) => item.productId === product.id
-          );
+          const existingItem = state.items.find((item) => item.productId === product.id);
 
           if (existingItem) {
             // Update quantity if item already exists
@@ -38,33 +56,14 @@ export const useCartStore = create<CartStore>()(
             });
           }
 
-          // Recalculate totals
-          state.itemCount = state.items.reduce(
-            (sum, item) => sum + item.quantity,
-            0
-          );
-          state.total = state.items.reduce(
-            (sum, item) => sum + item.product.price * item.quantity,
-            0
-          );
+          recompute(state);
         });
       },
 
       removeItem: (productId) => {
         set((state) => {
-          state.items = state.items.filter(
-            (item) => item.productId !== productId
-          );
-
-          // Recalculate totals
-          state.itemCount = state.items.reduce(
-            (sum, item) => sum + item.quantity,
-            0
-          );
-          state.total = state.items.reduce(
-            (sum, item) => sum + item.product.price * item.quantity,
-            0
-          );
+          state.items = state.items.filter((item) => item.productId !== productId);
+          recompute(state);
         });
       },
 
@@ -78,16 +77,7 @@ export const useCartStore = create<CartStore>()(
           const item = state.items.find((item) => item.productId === productId);
           if (item) {
             item.quantity = quantity;
-
-            // Recalculate totals
-            state.itemCount = state.items.reduce(
-              (sum, item) => sum + item.quantity,
-              0
-            );
-            state.total = state.items.reduce(
-              (sum, item) => sum + item.product.price * item.quantity,
-              0
-            );
+            recompute(state);
           }
         });
       },
@@ -97,6 +87,9 @@ export const useCartStore = create<CartStore>()(
           items: [],
           total: 0,
           itemCount: 0,
+          promoCode: null,
+          appliedPromo: null,
+          discount: 0,
         });
       },
 
@@ -105,17 +98,27 @@ export const useCartStore = create<CartStore>()(
       },
 
       calculateTotal: () => {
-        const state = get();
-        const itemCount = state.items.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
-        const total = state.items.reduce(
-          (sum, item) => sum + item.product.price * item.quantity,
-          0
-        );
+        set((state) => {
+          recompute(state);
+        });
+      },
 
-        set({ itemCount, total });
+      applyPromoCode: (promo) => {
+        set((state) => {
+          state.appliedPromo = promo;
+          state.promoCode = promo.code;
+          state.discount = state.appliedPromo
+            ? discountForPromo(state.appliedPromo, state.total)
+            : 0;
+        });
+      },
+
+      removePromoCode: () => {
+        set({
+          promoCode: null,
+          appliedPromo: null,
+          discount: 0,
+        });
       },
     })),
     {

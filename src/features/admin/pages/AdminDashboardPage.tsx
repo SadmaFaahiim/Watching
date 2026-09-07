@@ -194,6 +194,24 @@ const AdminDashboardPage = () => {
 
   const topProducts = [...products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 5);
 
+  // Top customers by lifetime spend (excludes cancelled orders).
+  const topCustomers = useMemo(() => {
+    const totals = new Map<string, { name: string; spend: number; orders: number }>();
+    for (const order of orders) {
+      if (order.orderStatus === 'cancelled') continue;
+      const owner = users.find((entry) => entry.id === order.userId);
+      const name = owner?.displayName || order.shippingAddress.fullName || 'Guest';
+      const current = totals.get(order.userId) ?? { name, spend: 0, orders: 0 };
+      current.spend += order.total;
+      current.orders += 1;
+      totals.set(order.userId, current);
+    }
+    return [...totals.values()]
+      .filter((entry) => entry.spend > 0)
+      .sort((a, b) => b.spend - a.spend)
+      .slice(0, 5);
+  }, [orders, users]);
+
   // -----------------------------------------------------------------------
   // Sales analytics (computed client-side from the API-fetched order list)
   // -----------------------------------------------------------------------
@@ -534,6 +552,38 @@ const AdminDashboardPage = () => {
                 <Button component={RouterLink} to="/admin/products" size="small" sx={{ mt: 2 }}>
                   Manage products
                 </Button>
+              </Paper>
+
+              <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
+                Top customers
+              </Typography>
+              <Paper variant="outlined" sx={{ p: 2.5, mb: 2.5 }}>
+                {topCustomers.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No customer spend yet.
+                  </Typography>
+                ) : (
+                  <Stack spacing={1}>
+                    {topCustomers.map((customer, index) => (
+                      <Stack key={customer.name} direction="row" alignItems="center" gap={1.5}>
+                        <Typography fontWeight={800} color="text.secondary" sx={{ width: 20 }}>
+                          {index + 1}
+                        </Typography>
+                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                          <Typography variant="body2" noWrap fontWeight={600}>
+                            {customer.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {customer.orders} order{customer.orders === 1 ? '' : 's'}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" fontWeight={700}>
+                          {formatCurrency(customer.spend)}
+                        </Typography>
+                      </Stack>
+                    ))}
+                  </Stack>
+                )}
               </Paper>
 
               <Typography variant="h6" component="h2" fontWeight={700} sx={{ mb: 2 }}>
