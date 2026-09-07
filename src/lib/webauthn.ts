@@ -67,11 +67,10 @@ export const fromBase64Url = (value: string): Uint8Array<ArrayBuffer> => {
 /** 32 random bytes, base64url — the challenge is never reused. */
 export const generateChallenge = (): string => {
   const bytes = new Uint8Array(32);
-  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-    crypto.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+  if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') {
+    throw new Error('Secure random number generation is unavailable in this environment.');
   }
+  crypto.getRandomValues(bytes);
   return toBase64Url(bytes);
 };
 

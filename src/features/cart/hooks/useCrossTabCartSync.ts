@@ -33,7 +33,7 @@ export function useCrossTabCartSync(): void {
       }
       applyingRemote.current = true;
       try {
-        useCartStore.getState().items = payload.items as CartItem[];
+        useCartStore.setState({ items: payload.items as CartItem[] });
         useCartStore.getState().calculateTotal();
       } finally {
         applyingRemote.current = false;

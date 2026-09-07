@@ -322,9 +322,14 @@ describe('accessibility regression tests (axe-core, WCAG A/AA)', () => {
 
   it('admin reviews', async () => {
     renderPage('/admin/reviews', 'admin');
-    await waitForContent();
-    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    // Admin reviews renders a large table — use a longer timeout for the initial paint.
+    await waitFor(
+      () => {
+        expect(document.querySelector('h1')).not.toBeNull();
+        expect(document.querySelector('.MuiCircularProgress-root')).toBeNull();
+      },
+      { timeout: 15000 }
+    );
     await expectNoA11yViolations();
-  }, // 5s default on this page. // The whole review corpus renders in one table — axe needs more than the
-  20_000);
+  });
 });

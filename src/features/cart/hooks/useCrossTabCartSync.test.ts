@@ -1,7 +1,6 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import { useCartStore } from '@/store/cart.store';
-import { openBroadcastChannel } from '@/lib/broadcastChannel';
-import type { CartItem } from '@/types';
+import type { CartItem, Product } from '@/types';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -10,28 +9,33 @@ afterEach(() => {
   useCartStore.setState({ items: [], total: 0, itemCount: 0, promoCode: null, appliedPromo: null, discount: 0 });
 });
 
-function makeProduct(id: string, price: number) {
-  return {
-    id,
-    name: `Watch ${id}`,
-    brand: 'Test',
-    model: 'Test',
-    description: 'Test product',
-    price,
-    thumbnail: '',
-    images: [],
-    category: 'classic' as const,
-    stock: 10,
-    rating: 4.0,
-    reviewCount: 0,
-    specifications: {},
-    features: [],
-    isNew: false,
-    isFeatured: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-}
+const makeProduct = (id: string, price: number): Product => ({
+  id,
+  name: `Watch ${id}`,
+  brand: 'Test',
+  model: 'Test',
+  description: 'Test product',
+  price,
+  thumbnail: '',
+  images: [] as const,
+  category: 'classic' as const,
+  stock: 10,
+  rating: 4.0,
+  reviewCount: 0,
+  specifications: {
+    movement: 'Automatic',
+    caseDiameter: '40mm',
+    caseMaterial: 'Stainless Steel',
+    waterResistance: '30m',
+    strapMaterial: 'Leather',
+    warranty: '2-year',
+  },
+  features: [],
+  isNew: false,
+  isFeatured: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
 
 function createMockChannel() {
   const listeners: Array<(event: MessageEvent) => void> = [];
@@ -82,12 +86,14 @@ describe('cross-tab cart sync', () => {
 
   it('does nothing when the message is not a cart-sync event', () => {
     const channel = createMockChannel();
+    let received = false;
 
     const onmessage = (event: MessageEvent) => {
       const payload = event.data;
       if (!payload || payload.type !== 'cart-sync' || !Array.isArray(payload.items)) return;
       useCartStore.getState().items = payload.items as CartItem[];
       useCartStore.getState().calculateTotal();
+      received = true;
     };
     channel.addEventListener('message', onmessage);
 
@@ -95,10 +101,11 @@ describe('cross-tab cart sync', () => {
     channel.simulateMessage({ type: 'compare-sync', items: [] });
 
     expect(useCartStore.getState().items).toHaveLength(0);
+    expect(received).toBe(false);
+    channel.removeEventListener('message', onmessage);
   });
 
   it('Broadcasts cart changes when the store is mutated (simulated)', () => {
-    const channel = createMockChannel();
     const posted: unknown[] = [];
     vi.stubGlobal('BroadcastChannel', vi.fn(() => ({
       addEventListener: () => {},
