@@ -32,6 +32,7 @@ import {
   WorkspacePremiumOutlined,
 } from '@mui/icons-material';
 import toast from 'react-hot-toast';
+import { useCrossTabTrackedTabs } from '@/features/products/hooks/useCrossTabTrackedTabs';
 import { useProduct, useFeaturedProducts } from '@/api/products.api';
 import { getApiErrorMessage } from '@/lib/axios';
 import { useCartStore } from '@/store/cart.store';
@@ -82,12 +83,16 @@ const ProductDetailPage = () => {
 
   const { data: product, isLoading, isError, error, refetch } = useProduct(id ?? '');
   const featuredQuery = useFeaturedProducts(8);
+  const { setCurrent: broadcastFocus } = useCrossTabTrackedTabs();
 
   // Track the visit for the “Recently viewed” rail (after hooks, before the
   // loading early-return — the effect only records when a product is loaded).
   useEffect(() => {
-    if (product) recordRecentView(product);
-  }, [product, recordRecentView]);
+    if (product) {
+      recordRecentView(product);
+      broadcastFocus(product);
+    }
+  }, [product, recordRecentView, broadcastFocus]);
 
   if (isLoading) return <DetailSkeleton />;
 

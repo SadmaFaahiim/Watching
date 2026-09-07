@@ -2,7 +2,7 @@
 
 > A production-grade, security-first luxury watch e-commerce platform — **React 18 · TypeScript · Vite · MUI 6 · Zustand · TanStack Query** — that runs fully in **demo mode with zero configuration** and can switch to **real Firebase auth + Firestore** by adding credentials.
 
-![version](https://img.shields.io/badge/version-3.1.0-212121) ![license](https://img.shields.io/badge/license-MIT-blue) ![tests](https://img.shields.io/badge/tests-152%20passing-success) ![a11y](https://img.shields.io/badge/a11y-WCAG%20AA%20zero%20violations-4CAF50) ![PWA](https://img.shields.io/badge/PWA-ready-5A31F4) ![CI](https://img.shields.io/badge/CI-lint%20·%20tsc%20·%20tests%20·%20build%20·%20audit%20·%20E2E%20·%20Lighthouse-181717)
+![version](https://img.shields.io/badge/version-3.1.0-212121) ![license](https://img.shields.io/badge/license-MIT-blue) ![tests](https://img.shields.io/badge/tests-156%20passing-success) ![a11y](https://img.shields.io/badge/a11y-WCAG%20AA%20zero%20violations-4CAF50) ![PWA](https://img.shields.io/badge/PWA-ready-5A31F4) ![CI](https://img.shields.io/badge/CI-lint%20·%20tsc%20·%20tests%20·%20build%20·%20audit%20·%20E2E%20·%20Lighthouse-181717)
 
 ---
 
@@ -12,7 +12,7 @@
 
 - **Catalog & discovery** — responsive product grid with category / brand / price / rating filters, sorting, live search, featured & latest rails, and rich product detail pages with real Unsplash watch photography.
 - **Reviews & ratings** — rating-distribution summaries, verified-purchase badges, helpful votes, and a write-review flow whose aggregates stay coherent with the catalog (new reviews recompute each product's rating/count).
-- **Discovery extras** — a persisted **recently-viewed rail**, **quick-view** on every card, and a **side-by-side compare drawer** across up to four watches (specs, price, availability).
+- **Discovery extras** — a persisted **recently-viewed rail** that stays in sync across open browser tabs (`BroadcastChannel`), **quick-view** on every card, and a **side-by-side compare drawer** across up to four watches (specs, price, availability).
 - **Cart & checkout** — persisted cart, Zod + react-hook-form validation, multiple payment methods, **promo codes** (percent/fixed, min-order & usage caps — seeded codes like `WELCOME10`), and order confirmation with a full order-history view.
 - **Account area** — customer dashboard, order tracking & per-order activity timelines, wishlist, an in-app **notification center** (order status, refunds, stock alerts), and profile/security management.
 
