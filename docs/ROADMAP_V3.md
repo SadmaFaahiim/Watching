@@ -2,7 +2,7 @@
 
 > Reality-checked: every release below is tracked against **working code**, not doc claims.
 > Latest shipped: **v3.1.0** (trust & commerce + discovery + admin depth + E2E/telemetry).
-> Companion docs: `README.md`, `UPGRADE_SUMMARY.md`, `DEPLOYMENT.md`.
+> Companion docs: `../README.md`, `UPGRADE_SUMMARY.md`, `DEPLOYMENT.md`.
 
 ---
 

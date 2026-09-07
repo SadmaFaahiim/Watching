@@ -161,7 +161,7 @@ src/
 
 Cross-tab broadcast utilities live in `src/lib/broadcastChannel.ts`, and feature-specific sync hooks are colocated with their features (e.g. `src/features/cart/hooks/useCrossTabCartSync.ts`).
 
-See [`FILE_STRUCTURE.md`](./FILE_STRUCTURE.md) for the full tree and [`PROJECT_OVERVIEW.md`](./PROJECT_OVERVIEW.md) for an architecture deep-dive.
+See [`docs/FILE_STRUCTURE.md`](./docs/FILE_STRUCTURE.md) for the full tree and [`docs/PROJECT_OVERVIEW.md`](./docs/PROJECT_OVERVIEW.md) for an architecture deep-dive.
 
 ---
 
@@ -368,7 +368,7 @@ npm run preview
 
 ## Deployment
 
-See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for the full deployment checklist. In summary:
+See [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) for the full deployment checklist. In summary:
 
 1. **Build**: `npm run build`
 2. **Serve** the `dist/` directory as a static site (any static host: Vercel, Netlify, Cloudflare Pages, GitHub Pages, etc.).
@@ -424,7 +424,7 @@ MIT — free to use for learning or commercial purposes.
 
 ## Project Status
 
-**v3.1.0 — Production-ready.** Actively maintained. See [`ROADMAP_V3.md`](./ROADMAP_V3.md) for the product roadmap.
+**v3.1.0 — Production-ready.** Actively maintained. See [`docs/ROADMAP_V3.md`](./docs/ROADMAP_V3.md) for the product roadmap.
 
 ---
 
@@ -433,12 +433,12 @@ MIT — free to use for learning or commercial purposes.
 | Document | Contents |
 | -------- | -------- |
 | [`README.md`](./README.md) | You are here |
-| [`PROJECT_OVERVIEW.md`](./PROJECT_OVERVIEW.md) | Package contents & architecture |
-| [`QUICK_START.md`](./QUICK_START.md) | Fast setup walkthrough |
-| [`DEPLOYMENT.md`](./DEPLOYMENT.md) | Deployment checklist & guide |
-| [`FILE_STRUCTURE.md`](./FILE_STRUCTURE.md) | Complete file tree |
-| [`ROADMAP_V3.md`](./ROADMAP_V3.md) | Product roadmap (living document) |
-| [`UPGRADE_SUMMARY.md`](./UPGRADE_SUMMARY.md) | Migration/upgrade report |
+| [`docs/PROJECT_OVERVIEW.md`](./docs/PROJECT_OVERVIEW.md) | Package contents & architecture |
+| [`docs/QUICK_START.md`](./docs/QUICK_START.md) | Fast setup walkthrough |
+| [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) | Deployment checklist & guide |
+| [`docs/FILE_STRUCTURE.md`](./docs/FILE_STRUCTURE.md) | Complete file tree |
+| [`docs/ROADMAP_V3.md`](./docs/ROADMAP_V3.md) | Product roadmap (living document) |
+| [`docs/UPGRADE_SUMMARY.md`](./docs/UPGRADE_SUMMARY.md) | Migration/upgrade report |
 
 ---
 
