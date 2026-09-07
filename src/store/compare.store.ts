@@ -11,6 +11,8 @@ interface CompareStore {
   toggle: (product: Product) => void;
   remove: (productId: string) => void;
   clear: () => void;
+  /** Replace the full list (used when syncing from another tab). */
+  replaceItems: (items: Product[]) => void;
   openDrawer: () => void;
   closeDrawer: () => void;
 }
@@ -47,6 +49,12 @@ export const useCompareStore = create<CompareStore>()(
 
       clear: () => {
         set({ items: [] });
+      },
+
+      replaceItems: (items) => {
+        set((state) => {
+          state.items = items.slice(0, MAX_COMPARE);
+        });
       },
 
       openDrawer: () => {

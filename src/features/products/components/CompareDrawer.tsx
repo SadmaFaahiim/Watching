@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Close, CompareArrows } from '@mui/icons-material';
 import { useCompareStore } from '@/store/compare.store';
+import { useCrossTabCompareSync } from '@/features/products/hooks/useCrossTabCompareSync';
 import { formatCurrency } from '@/utils/helpers';
 import type { Product } from '@/types';
 
@@ -44,6 +45,7 @@ const COMPARE_ROWS: CompareRow[] = [
 ];
 
 const CompareDrawer = () => {
+  useCrossTabCompareSync();
   const navigate = useNavigate();
   const items = useCompareStore((state) => state.items);
   const drawerOpen = useCompareStore((state) => state.drawerOpen);

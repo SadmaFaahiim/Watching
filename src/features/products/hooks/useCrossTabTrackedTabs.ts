@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback } from 'react';
 import type { Product } from '@/types';
 import { useRecentlyViewedStore } from '@/store/recentlyViewed.store';
+import { openBroadcastChannel } from '@/lib/broadcastChannel';
 
 type CrossTabEvent =
   | { type: 'product-focus'; product: Product }
@@ -30,14 +31,7 @@ export function useCrossTabTrackedTabs(): TrackedTabsResult {
   const channelRef = useRef<BroadcastChannel | null>(null);
 
   if (channelRef.current === null) {
-    const GlobalBC = globalThis.BroadcastChannel;
-    if (typeof GlobalBC === 'function') {
-      try {
-        channelRef.current = new GlobalBC(CHANNEL_NAME);
-      } catch {
-        channelRef.current = null;
-      }
-    }
+    channelRef.current = openBroadcastChannel(CHANNEL_NAME);
   }
 
   const focusedRef = useRef<Product | null>(null);
