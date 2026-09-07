@@ -10,6 +10,9 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useAuthStore } from '@/store/auth.store';
 import { useThemeStore } from '@/store/theme.store';
 
+// Cross-tab sync
+import { useCrossTabCartSync } from '@/features/cart/hooks/useCrossTabCartSync';
+
 // Theme
 import { createAppTheme } from '@/styles/theme';
 
@@ -71,6 +74,9 @@ function App() {
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  // Keep the cart in sync across open tabs.
+  useCrossTabCartSync();
 
   // Create theme based on dark mode
   const theme = createAppTheme(isDark ? 'dark' : 'light');
